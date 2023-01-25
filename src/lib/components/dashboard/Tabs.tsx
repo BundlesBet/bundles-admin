@@ -168,7 +168,7 @@ const DashBoardTabs = () => {
                   <Heading size="xl" alignItems="start">
                     All Matches
                   </Heading>
-                  <CreatePoolTable matches={matches} />
+                  <CreatePoolTable matches={matches} league={league} />
                 </>
               ) : (
                 ""

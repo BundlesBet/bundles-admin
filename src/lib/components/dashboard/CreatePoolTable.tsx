@@ -16,16 +16,21 @@ import {
   TableContainer,
   Checkbox,
   Stack,
+  useDisclosure,
 } from "@chakra-ui/react";
 import Pagination from "@choc-ui/paginator";
+import moment from "moment";
 import React, { forwardRef } from "react";
+
+import { CreatePoolModal } from "../modals/CreatePool";
 
 interface CreatePoolTableProps {
   matches?: any;
+  league?: any;
 }
 const CreatePoolTable = (props: CreatePoolTableProps) => {
   const header = ["", "Sports", "Pool Name", "Match", "Date & Time"];
-  const { matches } = props;
+  const { matches, league } = props;
   const data = matches;
 
   const [current, setCurrent] = React.useState(1);
@@ -56,6 +61,7 @@ const CreatePoolTable = (props: CreatePoolTableProps) => {
       return Next;
     }
   };
+  const { isOpen, onOpen, onClose } = useDisclosure();
 
   return (
     <Flex w="full" alignItems="center" justifyContent="center">
@@ -68,8 +74,13 @@ const CreatePoolTable = (props: CreatePoolTableProps) => {
           }}
         >
           <TableCaption>
-            <Stack direction="column" alignItems="center" spacing="20">
-              <Button colorScheme="teal" size="lg">
+            <Stack direction="column" alignItems=" center" spacing="20">
+              <Button
+                size="lg"
+                colorScheme="teal"
+                color="#111"
+                onClick={onOpen}
+              >
                 Add Pool
               </Button>
               <Pagination
@@ -109,30 +120,78 @@ const CreatePoolTable = (props: CreatePoolTableProps) => {
             </Tr>
           </Thead>
           <Tbody>
-            {posts.map((post, index) => {
-              return (
-                <Tr key={index}>
-                  <Td color="#fff" fontSize="md" fontWeight="hairline">
-                    <Checkbox size="lg" colorScheme="teal" defaultChecked />
-                  </Td>
-                  <Td color="#fff" fontSize="md" fontWeight="hairline">
-                    {post.poolId}
-                  </Td>
-                  <Td color="#fff" fontSize="md" fontWeight="hairline">
-                    {post.poolLeague}
-                  </Td>
-                  <Td color="#fff" fontSize="md" fontWeight="hairline">
-                    {post.poolName}
-                  </Td>
-                  <Td color="#fff" fontSize="md" fontWeight="hairline">
-                    {post.poolStartTime}
-                  </Td>
-                </Tr>
-              );
-            })}
+            {posts.map(
+              (
+                matchData: {
+                  teams: {
+                    a: {
+                      name:
+                        | string
+                        | number
+                        | boolean
+                        /* eslint-disable @typescript-eslint/no-explicit-any */
+                        /* eslint-disable consistent-return */
+                        /* eslint-disable react/no-unstable-nested-components */
+                        /* eslint-disable react/no-array-index-key */
+                        | React.ReactElement<
+                            any,
+                            string | React.JSXElementConstructor<any>
+                          >
+                        | React.ReactFragment
+                        | React.ReactPortal
+                        | null
+                        | undefined;
+                    };
+                    b: {
+                      name:
+                        | string
+                        | number
+                        | boolean
+                        /* eslint-disable @typescript-eslint/no-explicit-any */
+                        /* eslint-disable consistent-return */
+                        /* eslint-disable react/no-unstable-nested-components */
+                        /* eslint-disable react/no-array-index-key */
+                        | React.ReactElement<
+                            any,
+                            string | React.JSXElementConstructor<any>
+                          >
+                        | React.ReactFragment
+                        | React.ReactPortal
+                        | null
+                        | undefined;
+                    };
+                  };
+                  match: { startTime: any };
+                },
+                index: React.Key | null | undefined
+              ) => {
+                return (
+                  <Tr key={index}>
+                    <Td color="#fff" fontSize="md" fontWeight="hairline">
+                      <Checkbox size="lg" colorScheme="teal" defaultChecked />
+                    </Td>
+                    <Td color="#fff" fontSize="md" fontWeight="hairline">
+                      {/* {matchData.match} */}
+                    </Td>
+                    <Td color="#fff" fontSize="md" fontWeight="hairline">
+                      {league}
+                    </Td>
+                    <Td color="#fff" fontSize="md" fontWeight="hairline">
+                      {matchData.teams.a.name} vs {matchData.teams.b.name}
+                    </Td>
+                    <Td color="#fff" fontSize="md" fontWeight="hairline">
+                      {moment(
+                        parseFloat(`${matchData.match.startTime}}`)
+                      ).format("MM-DD-YYYY HH:MM")}
+                    </Td>
+                  </Tr>
+                );
+              }
+            )}
           </Tbody>
         </Table>
       </TableContainer>
+      <CreatePoolModal isOpen={isOpen} close={onClose} />
     </Flex>
   );
 };
