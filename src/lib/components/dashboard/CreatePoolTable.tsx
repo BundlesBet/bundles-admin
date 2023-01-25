@@ -29,7 +29,7 @@ interface CreatePoolTableProps {
   league?: any;
 }
 const CreatePoolTable = (props: CreatePoolTableProps) => {
-  const header = ["", "Sports", "Pool Name", "Match", "Date & Time"];
+  const header = ["", "Pool Name", "Match", "Date & Time"];
   const { matches, league } = props;
   const data = matches;
 
@@ -170,9 +170,7 @@ const CreatePoolTable = (props: CreatePoolTableProps) => {
                     <Td color="#fff" fontSize="md" fontWeight="hairline">
                       <Checkbox size="lg" colorScheme="teal" defaultChecked />
                     </Td>
-                    <Td color="#fff" fontSize="md" fontWeight="hairline">
-                      {/* {matchData.match} */}
-                    </Td>
+
                     <Td color="#fff" fontSize="md" fontWeight="hairline">
                       {league}
                     </Td>

@@ -5,6 +5,7 @@ import {
   Input,
   Stack,
   useColorModeValue,
+  Select,
 } from "@chakra-ui/react";
 
 export const CreatePoolForm = () => (
@@ -44,6 +45,15 @@ export const CreatePoolForm = () => (
         focusBorderColor={useColorModeValue("blue.500", "blue.200")}
       />
     </FormControl>
+    <Select
+      placeholder="Select Pool Type"
+      borderColor="#00ffc2"
+      _selected={{ borderColor: "#00ffc2" }}
+    >
+      <option value="option1">10%</option>
+      <option value="option2">20%</option>
+      <option value="option3">50%</option>
+    </Select>
 
     <Button
       type="submit"

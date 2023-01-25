@@ -134,6 +134,7 @@ const DashBoardTabs = () => {
                 _selected={{ borderColor: "#00ffc2" }}
                 defaultValue="select_sport"
                 onChange={handleDropDownChange}
+                w="50%"
               >
                 {sports.length &&
                   sports.map((sport: any, index: number) => {
@@ -146,6 +147,7 @@ const DashBoardTabs = () => {
                   })}
               </Select>
               <Select
+                w="50%"
                 placeholder="Select Pool"
                 borderColor="#00ffc2"
                 _selected={{ borderColor: "#00ffc2" }}
