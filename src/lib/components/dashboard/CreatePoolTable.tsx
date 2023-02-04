@@ -20,23 +20,22 @@ import {
 } from "@chakra-ui/react";
 import Pagination from "@choc-ui/paginator";
 import moment from "moment";
-import React, { forwardRef } from "react";
-
+import { useState, forwardRef } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { CreatePoolModal } from "../modals/CreatePool";
+import { handleSelectChange } from "redux/slices/poolSlice";
 
-interface CreatePoolTableProps {
-  matches?: any;
-  league?: any;
-}
-const CreatePoolTable = (props: CreatePoolTableProps) => {
+const CreatePoolTable = () => {
+  const dispatch = useDispatch();
   const header = ["", "Pool Name", "Match", "Date & Time"];
-  const { matches, league } = props;
-  const data = matches;
+  const { league, allMatches, selectedMatches } = useSelector(
+    (store) => store.pools
+  );
 
-  const [current, setCurrent] = React.useState(1);
+  const [current, setCurrent] = useState(1);
   const pageSize = 5;
-  const offset = (current - 1) * pageSize;
-  const posts = data.slice(offset, offset + pageSize);
+  // const offset = (current - 1) * pageSize;
+  // const posts = data.slice(offset, offset + pageSize);
 
   const Prev = forwardRef((props, ref: any) => {
     return (
@@ -61,7 +60,12 @@ const CreatePoolTable = (props: CreatePoolTableProps) => {
       return Next;
     }
   };
+
   const { isOpen, onOpen, onClose } = useDisclosure();
+
+  const onSelectChange = (checkedMatch: any) => {
+    dispatch(handleSelectChange(checkedMatch));
+  };
 
   return (
     <Flex w="full" alignItems="center" justifyContent="center">
@@ -89,7 +93,7 @@ const CreatePoolTable = (props: CreatePoolTableProps) => {
                   setCurrent(page);
                 }}
                 pageSize={pageSize}
-                total={data.length}
+                total={allMatches?.length}
                 itemRender={itemRender}
                 paginationProps={{
                   display: "flex",
@@ -120,72 +124,38 @@ const CreatePoolTable = (props: CreatePoolTableProps) => {
             </Tr>
           </Thead>
           <Tbody>
-            {posts.map(
-              (
-                matchData: {
-                  teams: {
-                    a: {
-                      name:
-                        | string
-                        | number
-                        | boolean
-                        /* eslint-disable @typescript-eslint/no-explicit-any */
-                        /* eslint-disable consistent-return */
-                        /* eslint-disable react/no-unstable-nested-components */
-                        /* eslint-disable react/no-array-index-key */
-                        | React.ReactElement<
-                            any,
-                            string | React.JSXElementConstructor<any>
-                          >
-                        | React.ReactFragment
-                        | React.ReactPortal
-                        | null
-                        | undefined;
-                    };
-                    b: {
-                      name:
-                        | string
-                        | number
-                        | boolean
-                        /* eslint-disable @typescript-eslint/no-explicit-any */
-                        /* eslint-disable consistent-return */
-                        /* eslint-disable react/no-unstable-nested-components */
-                        /* eslint-disable react/no-array-index-key */
-                        | React.ReactElement<
-                            any,
-                            string | React.JSXElementConstructor<any>
-                          >
-                        | React.ReactFragment
-                        | React.ReactPortal
-                        | null
-                        | undefined;
-                    };
-                  };
-                  match: { startTime: any };
-                },
-                index: React.Key | null | undefined
-              ) => {
+            {allMatches?.length &&
+              allMatches?.map((match: any, index: number) => {
                 return (
                   <Tr key={index}>
                     <Td color="#fff" fontSize="md" fontWeight="hairline">
-                      <Checkbox size="lg" colorScheme="teal" defaultChecked />
+                      <Checkbox
+                        size="lg"
+                        colorScheme="teal"
+                        checked={selectedMatches.find(
+                          (selectedMatch: any) =>
+                            // eslint-disable-next-line radix
+                            parseInt(selectedMatch.espnMatchId) ===
+                            parseInt(match.espnMatchId)
+                        )}
+                        onChange={() => onSelectChange(match)}
+                      />
                     </Td>
 
                     <Td color="#fff" fontSize="md" fontWeight="hairline">
                       {league}
                     </Td>
                     <Td color="#fff" fontSize="md" fontWeight="hairline">
-                      {matchData.teams.a.name} vs {matchData.teams.b.name}
+                      {match.teams.a.name} vs {match.teams.b.name}
                     </Td>
                     <Td color="#fff" fontSize="md" fontWeight="hairline">
-                      {moment(
-                        parseFloat(`${matchData.match.startTime}}`)
-                      ).format("MM-DD-YYYY HH:MM")}
+                      {moment(parseFloat(`${match.startTime}`)).format(
+                        "MM-DD-YYYY HH:MM"
+                      )}
                     </Td>
                   </Tr>
                 );
-              }
-            )}
+              })}
           </Tbody>
         </Table>
       </TableContainer>

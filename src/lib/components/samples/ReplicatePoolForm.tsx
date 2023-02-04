@@ -4,60 +4,44 @@ import {
   FormLabel,
   Input,
   Stack,
+  Select,
   useColorModeValue,
 } from "@chakra-ui/react";
+import axios from "axios";
 import { useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import { handleChange, replicatePool } from "redux/slices/poolSlice";
 
-import { handleChange } from "redux/slices/poolSlice";
-
-interface FormStates {
-  poolName: string;
-  fee: string;
-  protocolFee: string;
-}
-
-interface PoolEditProps {
-  pool?: any;
-  close: any;
-}
-
-export const EditPoolForm = (props: PoolEditProps) => {
+export const ReplicatePoolForm = () => {
   const dispatch = useDispatch();
-  const { close } = props;
-  const { editPool, isEditPoolLoading, poolName, fee, protocolFee } =
-    useSelector((store) => store.pools);
-
-  const [formStates, setFormStates] = useState<FormStates>({
-    poolName: editPool.poolName ? editPool.poolName : "",
-    fee: editPool.fee ? editPool.fee : "",
-    protocolFee: editPool.protocolFee ? editPool.protocolFee : "",
-  });
+  const {
+    fee,
+    poolName,
+    protocolFee,
+    replicatePoolId,
+    rewardPercentage,
+    isReplicatePoolLoading,
+  } = useSelector((store) => store.pools);
 
   const onInputChange = (e: unknown) => {
-    // setFormStates({ ...formStates, [e.target.name]: e.target.value });
     const name = e.target.name;
     const value = e.target.value;
     dispatch(handleChange({ name, value }));
   };
 
-  // const onEditPool = async (e: unknown) => {
-  //   e.preventDefault();
-  //   if (!pool.id) return;
-  //   try {
-  //     await axios.put(
-  //       `${process.env.NEXT_PUBLIC_PROD_BASE_URL}/${process.env.NEXT_PUBLIC_VERSION}/admin/updatePool/${pool.id}`,
-  //       {
-  //         poolName: formStates.poolName,
-  //         fee: formStates.fee,
-  //         protocolFee: formStates.protocolFee,
-  //       }
-  //     );
-  //     close();
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  // };
+  const onReplicatePool = async (e: unknown) => {
+    e.preventDefault();
+    if (!replicatePoolId) return;
+    console.log("running");
+    const payload = {
+      fee,
+      poolName,
+      protocolFee,
+      poolId: replicatePoolId,
+      rewardPercentage,
+    };
+    dispatch(replicatePool(payload));
+  };
 
   return (
     <Stack
@@ -72,12 +56,13 @@ export const EditPoolForm = (props: PoolEditProps) => {
         <FormLabel srOnly>Pool Name</FormLabel>
         <Input
           type="text"
-          placeholder="Edit Pool Name"
+          placeholder="Enter Pool Name"
           size="lg"
           name="poolName"
           fontSize="md"
-          value={formStates.poolName}
+          value={poolName}
           onChange={onInputChange}
+          isDisabled={isReplicatePoolLoading}
           focusBorderColor={useColorModeValue("blue.500", "blue.200")}
         />
       </FormControl>
@@ -85,12 +70,13 @@ export const EditPoolForm = (props: PoolEditProps) => {
         <FormLabel srOnly>Fee</FormLabel>
         <Input
           type="text"
-          placeholder="Edit Fee"
+          placeholder="Enter Fee"
           size="lg"
           fontSize="md"
           name="fee"
-          value={formStates.fee}
+          value={fee}
           onChange={onInputChange}
+          isDisabled={isReplicatePoolLoading}
           focusBorderColor={useColorModeValue("blue.500", "blue.200")}
         />
       </FormControl>
@@ -98,15 +84,31 @@ export const EditPoolForm = (props: PoolEditProps) => {
         <FormLabel srOnly>Protocol Fee</FormLabel>
         <Input
           type="text"
-          placeholder="Edit Protocol Fee"
+          placeholder="Enter Protocol Fee"
           size="lg"
           fontSize="md"
           name="protocolFee"
-          value={formStates.protocolFee}
+          value={protocolFee}
+          isDisabled={isReplicatePoolLoading}
           onChange={onInputChange}
           focusBorderColor={useColorModeValue("blue.500", "blue.200")}
         />
       </FormControl>
+
+      <Select
+        id="rewardPercentage"
+        borderColor="#00ffc2"
+        name="rewardPercentage"
+        onChange={onInputChange}
+        placeholder="Select Pool Type"
+        value={rewardPercentage}
+        isDisabled={isReplicatePoolLoading}
+        _selected={{ borderColor: "#00ffc2" }}
+      >
+        <option value="10">10%</option>
+        <option value="20">20%</option>
+        <option value="50">50%</option>
+      </Select>
 
       <Button
         type="submit"
@@ -120,10 +122,10 @@ export const EditPoolForm = (props: PoolEditProps) => {
           bg: "#00ffc2",
         }}
         size="lg"
-        disabled={isEditPoolLoading}
-        // onClick={onEditPool}
+        isDisabled={isReplicatePoolLoading}
+        onClick={onReplicatePool}
       >
-        Edit Pool
+        Replicate Pool
       </Button>
     </Stack>
   );

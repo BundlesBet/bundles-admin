@@ -16,6 +16,7 @@ interface ModalProps {
 
 export const CreatePoolModal = (props: ModalProps) => {
   const { isOpen, close } = props;
+
   return (
     <Modal
       isOpen={isOpen}

@@ -4,7 +4,7 @@ import { api } from "./index";
 
 const adminRoute = "/admin";
 
-const apiCall = async (response: any, error: any) => {
+export const apiCall = async (response: any, error: any) => {
   try {
     if (error) return { error: true, ...error.response.data };
     if (response.data.error) return { ...response.data };
@@ -21,7 +21,7 @@ export const fetchPools = async () => {
   return apiCall(response, error);
 };
 
-export const getSports = async () => {
+export const fetchSports = async () => {
   const [response, error] = await api(axios.get(`${adminRoute}/getSports`));
   return apiCall(response, error);
 };
@@ -38,5 +38,35 @@ export const fetchMatches = async (sport: string, league: string) => {
     axios.get(`${adminRoute}/fetchMatchesData/${sport}/${league}`)
   );
 
+  return apiCall(response, error);
+};
+
+export const createPool = async (poolDetails: any) => {
+  const [response, error] = await api(
+    axios.post(`${adminRoute}/createPool`, poolDetails)
+  );
+  return apiCall(response, error);
+};
+
+export const poolReplication = async (poolDetails: any) => {
+  // console.log(poolDetails);
+  const [response, error] = await api(
+    axios.post(`${adminRoute}/replicatePool`, poolDetails)
+  );
+  return apiCall(response, error);
+};
+
+export const poolUpdation = async (poolId, poolDetails: any) => {
+  // console.log(poolDetails);
+  const [response, error] = await api(
+    axios.put(`${adminRoute}/updatePool/${poolId}`, poolDetails)
+  );
+  return apiCall(response, error);
+};
+
+export const poolArchive = async ({ poolId }) => {
+  const [response, error] = await api(
+    axios.put(`${adminRoute}/archivePool/${poolId}`)
+  );
   return apiCall(response, error);
 };

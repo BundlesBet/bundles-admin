@@ -23,6 +23,8 @@ import {
 import { urls } from "utils";
 import { useRouter } from "next/router";
 import Footer from "lib/layout/Footer";
+import store from "redux/store";
+import { Provider } from "react-redux";
 
 const { chains, provider, webSocketProvider } = configureChains(
   [
@@ -73,28 +75,30 @@ const MyApp = ({ Component, pageProps }: AppProps) => {
         theme={darkTheme(theme)}
         chains={chains}
       >
-        <Chakra>
-          <Head>
-            <meta
-              name="viewport"
-              content="minimum-scale=1, initial-scale=1, width=device-width, shrink-to-fit=no, viewport-fit=cover"
-            />
-          </Head>
-          <DefaultSeo {...defaultSEOConfig} />
-          {loginRoutes.includes(router.pathname) ? (
-            <>
-              <Component {...pageProps} />
-              <Footer />
-            </>
-          ) : (
-            <>
-              {" "}
-              <Layout>
+        <Provider store={store}>
+          <Chakra>
+            <Head>
+              <meta
+                name="viewport"
+                content="minimum-scale=1, initial-scale=1, width=device-width, shrink-to-fit=no, viewport-fit=cover"
+              />
+            </Head>
+            <DefaultSeo {...defaultSEOConfig} />
+            {loginRoutes.includes(router.pathname) ? (
+              <>
                 <Component {...pageProps} />
-              </Layout>
-            </>
-          )}
-        </Chakra>
+                <Footer />
+              </>
+            ) : (
+              <>
+                {" "}
+                <Layout>
+                  <Component {...pageProps} />
+                </Layout>
+              </>
+            )}
+          </Chakra>
+        </Provider>
       </RainbowKitProvider>
     </WagmiConfig>
   );

@@ -14,89 +14,71 @@ import {
   Select,
   Heading,
 } from "@chakra-ui/react";
+import axios from "axios";
+import { useDispatch, useSelector } from "react-redux";
 import { useCallback, useEffect, useRef, useState } from "react";
-
+import { fetchPools } from "utils/apiCalls";
 import {
-  fetchLeagues,
-  fetchMatches,
-  fetchPools,
-  getSports,
-} from "utils/apiCalls";
-
-import CreatePoolTable from "./CreatePoolTable";
+  handleChange,
+  fetchAllPools,
+  fetchAllSports,
+  fetchAllLeagues,
+  fetchAllMatches,
+} from "redux/slices/poolSlice";
 import PoolTable from "./PoolTable";
+import CreatePoolTable from "./CreatePoolTable";
 
 const DashBoardTabs = () => {
-  const pools = useRef([]);
-  const [loading, setIsLoading] = useState<boolean>(false);
-  const [sports, setSports] = useState<any>([]);
-  const [sport, setSport] = useState<string>("");
-  const [leagues, setLeagues] = useState<any>([]);
-  const [matches, setMatches] = useState<any>([]);
-  const [league, setLeague] = useState<string>("");
+  const dispatch = useDispatch();
+  const {
+    sport,
+    sports,
+    league,
+    leagues,
+    allPools,
+    allMatches,
+    isLoading,
+    isAllMatchesLoading,
+  } = useSelector((store) => store.pools);
 
-  const handleDropDownChange = (e: any) => {
-    setSport(e.target.value);
-  };
-
-  const handleDropDownChangePool = (e: any) => {
-    setLeague(e.target.value);
+  const onInputChange = (e: unknown) => {
+    const name = e.target.name;
+    const value = e.target.value;
+    dispatch(handleChange({ name, value }));
   };
 
   const fetchSports = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      const data = await getSports();
-
-      setSports(data.sportsData.items);
-      setIsLoading(false);
-    } catch (error) {
-      console.log(error);
-    }
+    dispatch(fetchAllSports());
   }, []);
 
-  const fetchLeaguesData = useCallback(async () => {
+  const fetchLeagues = useCallback(async () => {
     try {
       if (!sport) return;
-      setIsLoading(true);
-
-      const data = await fetchLeagues(sport);
-
-      setLeagues(data.leaguesData.leagues.items);
-      setIsLoading(false);
+      dispatch(fetchAllLeagues(sport));
     } catch (error) {
       console.log(error);
     }
   }, [sport]);
 
-  const fetchMatchesData = useCallback(async () => {
+  const fetchMatches = useCallback(async () => {
     try {
       if (!league) return;
-      setIsLoading(true);
-
-      const data = await fetchMatches(sport, league);
-      console.log(data);
-      setMatches(data.matchesData);
-      setIsLoading(false);
+      dispatch(fetchAllMatches({ sport, league }));
     } catch (error) {
       console.log(error);
     }
   }, [league, sport]);
 
   const fetchPoolsData = useCallback(async () => {
-    setIsLoading(true);
     try {
-      const data = await fetchPools();
-
-      pools.current = data.poolsData;
-      setIsLoading(false);
+      dispatch(fetchAllPools());
     } catch (error) {
-      setIsLoading(false);
+      console.log(error);
     }
   }, []);
 
   useEffect(() => {
-    if (pools.current.length > 0) return;
+    if (allPools.length > 0) return;
     fetchPoolsData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fetchPoolsData]);
@@ -108,12 +90,12 @@ const DashBoardTabs = () => {
   }, [fetchSports]);
 
   useEffect(() => {
-    fetchLeaguesData();
-  }, [sport, fetchLeaguesData]);
+    fetchLeagues();
+  }, [sport, fetchLeagues]);
 
   useEffect(() => {
-    fetchMatchesData();
-  }, [league, fetchMatchesData]);
+    fetchMatches();
+  }, [league, fetchMatches]);
 
   return (
     <Box textAlign="center" w="full">
@@ -123,21 +105,20 @@ const DashBoardTabs = () => {
           <Tab _selected={{ color: "black", bg: "#00ffc2" }}>Add Pools</Tab>
         </TabList>
         <TabPanels>
-          <TabPanel>
-            {loading ? <Spinner /> : <PoolTable pools={pools.current} />}
-          </TabPanel>
+          <TabPanel>{isLoading ? <Spinner /> : <PoolTable />}</TabPanel>
           <TabPanel>
             <Stack direction="column" spacing="4">
               <Select
-                placeholder="Select Sport"
+                name="sport"
                 borderColor="#00ffc2"
-                _selected={{ borderColor: "#00ffc2" }}
+                placeholder="Select Sport"
                 defaultValue="select_sport"
-                onChange={handleDropDownChange}
+                onChange={onInputChange}
+                _selected={{ borderColor: "#00ffc2" }}
                 w="50%"
               >
-                {sports.length &&
-                  sports.map((sport: any, index: number) => {
+                {sports?.length &&
+                  sports?.map((sport: any, index: number) => {
                     const { name, slug } = sport;
                     return (
                       <option key={index} value={slug}>
@@ -148,13 +129,14 @@ const DashBoardTabs = () => {
               </Select>
               <Select
                 w="50%"
-                placeholder="Select Pool"
+                name="league"
                 borderColor="#00ffc2"
-                _selected={{ borderColor: "#00ffc2" }}
+                placeholder="Select League"
                 defaultValue="select_league"
-                onChange={handleDropDownChangePool}
+                _selected={{ borderColor: "#00ffc2" }}
+                onChange={onInputChange}
               >
-                {leagues.length &&
+                {leagues?.length &&
                   leagues?.map((sport: any, index: number) => {
                     const { name, slug } = sport;
                     return (
@@ -164,13 +146,13 @@ const DashBoardTabs = () => {
                     );
                   })}
               </Select>
-              {loading && <Spinner />}
-              {matches?.length > 0 ? (
+              {isAllMatchesLoading && <Spinner />}
+              {allMatches?.length > 0 ? (
                 <>
                   <Heading size="xl" alignItems="start">
                     All Matches
                   </Heading>
-                  <CreatePoolTable matches={matches} league={league} />
+                  <CreatePoolTable />
                 </>
               ) : (
                 ""

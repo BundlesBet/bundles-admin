@@ -7,14 +7,14 @@ import {
   Stack,
 } from "@chakra-ui/react";
 
-import { EditPoolForm } from "../samples/EditPoolForm";
+import { ReplicatePoolForm } from "lib/components/samples/ReplicatePoolForm";
 
 interface ModalProps {
   isOpen: boolean;
   close: () => void;
 }
 
-export const EditPoolModal = (props: ModalProps) => {
+export const ReplicatePoolModal = (props: ModalProps) => {
   const { isOpen, close } = props;
 
   return (
@@ -36,9 +36,9 @@ export const EditPoolModal = (props: ModalProps) => {
             spacing={{ base: "6", md: "10" }}
           >
             <Stack spacing="3" textAlign="center">
-              <Heading size="2xl">Edit Pool</Heading>
+              <Heading size="2xl">Replicate Pool</Heading>
             </Stack>
-            <EditPoolForm close={close} />
+            <ReplicatePoolForm />
           </Stack>
         </ModalBody>
       </ModalContent>
