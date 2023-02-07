@@ -28,16 +28,15 @@ import { Provider } from "react-redux";
 
 const { chains, provider, webSocketProvider } = configureChains(
   [
-    polygon,
     ...(process.env.NEXT_PUBLIC_ENABLE_TESTNETS === "true"
       ? [polygonMumbai]
-      : []),
+      : [polygon]),
   ],
   [
     alchemyProvider({
       // This is Alchemy's default API key.
       // You can get your own at https://dashboard.alchemyapi.io
-      apiKey: "xqBUec8hwYcXLPpMua9lzav4spEPGcn6",
+      apiKey: `${process.env.NEXT_PUBLIC_ALCHEMY_PRIVATE_KEY}`,
     }),
     publicProvider(),
   ]

@@ -7,57 +7,44 @@ import {
   useColorModeValue,
 } from "@chakra-ui/react";
 import { useState } from "react";
+import { useAccount } from "wagmi";
+import { DatePicker } from "chakra-ui-date-input";
 import { useDispatch, useSelector } from "react-redux";
 
-import { handleChange } from "redux/slices/poolSlice";
-
-interface FormStates {
-  poolName: string;
-  fee: string;
-  protocolFee: string;
-}
+import { editPool, handleChange } from "redux/slices/poolSlice";
 
 interface PoolEditProps {
-  pool?: any;
   close: any;
 }
 
 export const EditPoolForm = (props: PoolEditProps) => {
   const dispatch = useDispatch();
-  const { close } = props;
-  const { editPool, isEditPoolLoading, poolName, fee, protocolFee } =
+  const { address, isConnected } = useAccount();
+  const { editPoolId, isEditPoolLoading, poolName, fee, protocolFee } =
     useSelector((store) => store.pools);
 
-  const [formStates, setFormStates] = useState<FormStates>({
-    poolName: editPool.poolName ? editPool.poolName : "",
-    fee: editPool.fee ? editPool.fee : "",
-    protocolFee: editPool.protocolFee ? editPool.protocolFee : "",
-  });
-
   const onInputChange = (e: unknown) => {
-    // setFormStates({ ...formStates, [e.target.name]: e.target.value });
-    const name = e.target.name;
-    const value = e.target.value;
+    const { name, value } = e.target;
     dispatch(handleChange({ name, value }));
   };
 
-  // const onEditPool = async (e: unknown) => {
-  //   e.preventDefault();
-  //   if (!pool.id) return;
-  //   try {
-  //     await axios.put(
-  //       `${process.env.NEXT_PUBLIC_PROD_BASE_URL}/${process.env.NEXT_PUBLIC_VERSION}/admin/updatePool/${pool.id}`,
-  //       {
-  //         poolName: formStates.poolName,
-  //         fee: formStates.fee,
-  //         protocolFee: formStates.protocolFee,
-  //       }
-  //     );
-  //     close();
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  // };
+  const onEditPool = async (e: unknown) => {
+    e.preventDefault();
+    // if (!address && !isConnected) return "Please connect you wallet";
+    if (!poolName || !fee || !protocolFee || !editPoolId)
+      return console.log("Please fill out all the required fields)");
+    try {
+      const payload = {
+        poolName,
+        fee,
+        protocolFee,
+      };
+      dispatch(editPool({ poolId: editPoolId, poolDetails: payload }));
+      // close();
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   return (
     <Stack
@@ -76,7 +63,7 @@ export const EditPoolForm = (props: PoolEditProps) => {
           size="lg"
           name="poolName"
           fontSize="md"
-          value={formStates.poolName}
+          value={poolName}
           onChange={onInputChange}
           focusBorderColor={useColorModeValue("blue.500", "blue.200")}
         />
@@ -84,12 +71,12 @@ export const EditPoolForm = (props: PoolEditProps) => {
       <FormControl id="fee">
         <FormLabel srOnly>Fee</FormLabel>
         <Input
-          type="text"
+          type="number"
           placeholder="Edit Fee"
           size="lg"
           fontSize="md"
           name="fee"
-          value={formStates.fee}
+          value={fee}
           onChange={onInputChange}
           focusBorderColor={useColorModeValue("blue.500", "blue.200")}
         />
@@ -97,12 +84,12 @@ export const EditPoolForm = (props: PoolEditProps) => {
       <FormControl id="protocolFee">
         <FormLabel srOnly>Protocol Fee</FormLabel>
         <Input
-          type="text"
+          type="number"
           placeholder="Edit Protocol Fee"
           size="lg"
           fontSize="md"
           name="protocolFee"
-          value={formStates.protocolFee}
+          value={protocolFee}
           onChange={onInputChange}
           focusBorderColor={useColorModeValue("blue.500", "blue.200")}
         />
@@ -120,8 +107,8 @@ export const EditPoolForm = (props: PoolEditProps) => {
           bg: "#00ffc2",
         }}
         size="lg"
-        disabled={isEditPoolLoading}
-        // onClick={onEditPool}
+        disabled={!poolName || !fee || !protocolFee || isEditPoolLoading}
+        onClick={onEditPool}
       >
         Edit Pool
       </Button>

@@ -9,11 +9,14 @@ import {
 } from "@chakra-ui/react";
 import axios from "axios";
 import { useState } from "react";
+import { useAccount } from "wagmi";
 import { useSelector, useDispatch } from "react-redux";
+
 import { handleChange, replicatePool } from "redux/slices/poolSlice";
 
 export const ReplicatePoolForm = () => {
   const dispatch = useDispatch();
+  const { address, isConnected } = useAccount();
   const {
     fee,
     poolName,
@@ -24,15 +27,15 @@ export const ReplicatePoolForm = () => {
   } = useSelector((store) => store.pools);
 
   const onInputChange = (e: unknown) => {
-    const name = e.target.name;
-    const value = e.target.value;
+    const { name, value } = e.target;
     dispatch(handleChange({ name, value }));
   };
 
   const onReplicatePool = async (e: unknown) => {
     e.preventDefault();
+    // if (!address && !isConnected)
+    // return console.log("Please connect you wallet");
     if (!replicatePoolId) return;
-    console.log("running");
     const payload = {
       fee,
       poolName,
@@ -69,7 +72,7 @@ export const ReplicatePoolForm = () => {
       <FormControl id="fee">
         <FormLabel srOnly>Fee</FormLabel>
         <Input
-          type="text"
+          type="number"
           placeholder="Enter Fee"
           size="lg"
           fontSize="md"
@@ -83,7 +86,7 @@ export const ReplicatePoolForm = () => {
       <FormControl id="protocolFee">
         <FormLabel srOnly>Protocol Fee</FormLabel>
         <Input
-          type="text"
+          type="number"
           placeholder="Enter Protocol Fee"
           size="lg"
           fontSize="md"
@@ -100,7 +103,7 @@ export const ReplicatePoolForm = () => {
         borderColor="#00ffc2"
         name="rewardPercentage"
         onChange={onInputChange}
-        placeholder="Select Pool Type"
+        placeholder="Select Pool Reward %"
         value={rewardPercentage}
         isDisabled={isReplicatePoolLoading}
         _selected={{ borderColor: "#00ffc2" }}
@@ -122,7 +125,13 @@ export const ReplicatePoolForm = () => {
           bg: "#00ffc2",
         }}
         size="lg"
-        isDisabled={isReplicatePoolLoading}
+        isDisabled={
+          !fee ||
+          !poolName ||
+          !protocolFee ||
+          !rewardPercentage ||
+          isReplicatePoolLoading
+        }
         onClick={onReplicatePool}
       >
         Replicate Pool

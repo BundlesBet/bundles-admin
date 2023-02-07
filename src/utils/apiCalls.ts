@@ -8,7 +8,6 @@ export const apiCall = async (response: any, error: any) => {
   try {
     if (error) return { error: true, ...error.response.data };
     if (response.data.error) return { ...response.data };
-
     return { ...response.data, error: false };
     // eslint-disable-next-line @typescript-eslint/no-shadow
   } catch (error) {
@@ -49,7 +48,6 @@ export const createPool = async (poolDetails: any) => {
 };
 
 export const poolReplication = async (poolDetails: any) => {
-  // console.log(poolDetails);
   const [response, error] = await api(
     axios.post(`${adminRoute}/replicatePool`, poolDetails)
   );
@@ -57,14 +55,13 @@ export const poolReplication = async (poolDetails: any) => {
 };
 
 export const poolUpdation = async (poolId, poolDetails: any) => {
-  // console.log(poolDetails);
   const [response, error] = await api(
     axios.put(`${adminRoute}/updatePool/${poolId}`, poolDetails)
   );
   return apiCall(response, error);
 };
 
-export const poolArchive = async ({ poolId }) => {
+export const poolArchive = async (poolId) => {
   const [response, error] = await api(
     axios.put(`${adminRoute}/archivePool/${poolId}`)
   );

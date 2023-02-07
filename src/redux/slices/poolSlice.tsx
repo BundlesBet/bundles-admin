@@ -1,5 +1,4 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-
 import {
   createPool,
   fetchPools,
@@ -30,10 +29,80 @@ const initialState = {
   sports: [],
   leagues: [],
   poolName: "",
-  editPool: {},
-  editPoolId: "",
+  editPoolId: null,
   totalPools: 0,
-  allMatches: [],
+  isError: false,
+  allMatches: [
+    {
+      teams: {
+        a: {
+          value: 1,
+          abbreviation: "NFC",
+          name: "NFC",
+          link: "sportscenter://x-callback-url/showClubhouse?uid=s:20~l:28~t:32&section=scores",
+          logo: "https://a.espncdn.com/i/teamlogos/nfl/500/nfc.png",
+          teamId: "32",
+        },
+        b: {
+          value: 2,
+          abbreviation: "AFC",
+          name: "AFC",
+          link: "sportscenter://x-callback-url/showClubhouse?uid=s:20~l:28~t:31&section=scores",
+          logo: "https://a.espncdn.com/i/teamlogos/nfl/500/afc.png",
+          teamId: "31",
+        },
+      },
+      espnMatchId: 401492629,
+      startTime: 1675792230000,
+      name: "AFC  at NFC ",
+    },
+    {
+      teams: {
+        a: {
+          value: 1,
+          abbreviation: "TEN",
+          name: "Tennessee Titans",
+          link: "https://www.espn.com/nfl/team/_/name/ten/tennessee-titans",
+          logo: "https://a.espncdn.com/i/teamlogos/nfl/500/ten.png",
+          teamId: "10",
+        },
+        b: {
+          value: 2,
+          abbreviation: "DAL",
+          name: "Dallas Cowboys",
+          link: "https://www.espn.com/nfl/team/_/name/dal/dallas-cowboys",
+          logo: "https://a.espncdn.com/i/teamlogos/nfl/500/dal.png",
+          teamId: "6",
+        },
+      },
+      espnMatchId: 401437932,
+      startTime: 1675791330000,
+      name: "AFC  at NFC ",
+    },
+    {
+      teams: {
+        a: {
+          value: 1,
+          abbreviation: "NE",
+          name: "New England Patriots",
+          link: "https://www.espn.com/nfl/team/_/name/ne/new-england-patriots",
+          logo: "https://a.espncdn.com/i/teamlogos/nfl/500/ne.png",
+          teamId: "17",
+        },
+        b: {
+          value: 2,
+          abbreviation: "MIA",
+          name: "Miami Dolphins",
+          link: "https://www.espn.com/nfl/team/_/name/mia/miami-dolphins",
+          logo: "https://a.espncdn.com/i/teamlogos/nfl/500/mia.png",
+          teamId: "15",
+        },
+      },
+      espnMatchId: 401437938,
+      startTime: 1675793730000,
+      name: "AFC  at NFC ",
+    },
+  ],
   protocolFee: "",
   isLoading: false,
   replicatePoolId: "",
@@ -41,13 +110,15 @@ const initialState = {
   rewardPercentage: "",
   isPoolEditing: false,
   startTime: new Date(),
+  betEndTime: new Date(),
   isEditPoolLoading: false,
-  selectedMatches: [] as any,
   isAllSportsLoading: false,
   isAllLeaguesLoading: false,
+  selectedMatches: [] as any,
   isAllMatchesLoading: false,
   isCreatePoolLoading: false,
   isArchivePoolLoading: false,
+  maxBetEndTime: new Date(),
   isReplicatePoolLoading: false,
 };
 
@@ -55,7 +126,7 @@ export const fetchAllPools = createAsyncThunk(
   POOL_FETCH_POOLS,
   async (_, thunkAPI) => {
     try {
-      return fetchPools();
+      return await fetchPools();
     } catch (error) {
       console.log(error);
       return thunkAPI.rejectWithValue(error.message);
@@ -67,7 +138,7 @@ export const fetchAllSports = createAsyncThunk(
   POOL_FETCH_SPORTS,
   async (_, thunkAPI) => {
     try {
-      return fetchSports();
+      return await fetchSports();
     } catch (error) {
       console.log(error);
       return thunkAPI.rejectWithValue(error.message);
@@ -79,7 +150,7 @@ export const fetchAllLeagues = createAsyncThunk(
   POOL_FETCH_LEAGUES,
   async (sportName, thunkAPI) => {
     try {
-      return fetchLeagues(sportName);
+      return await fetchLeagues(sportName);
     } catch (error) {
       console.log(error);
       return thunkAPI.rejectWithValue(error.message);
@@ -92,7 +163,7 @@ export const fetchAllMatches = createAsyncThunk(
   async (payload, thunkAPI) => {
     try {
       const { sport, league } = payload;
-      return fetchMatches(sport, league);
+      return await fetchMatches(sport, league);
     } catch (error) {
       console.log(error);
       return thunkAPI.rejectWithValue(error.message);
@@ -119,7 +190,6 @@ export const replicatePool = createAsyncThunk(
   async (poolDetails, thunkAPI) => {
     try {
       const response = await poolReplication(poolDetails);
-      console.log(response);
       // eslint-disable-next-line @typescript-eslint/no-use-before-define
       thunkAPI.dispatch(clearInputs());
       return response;
@@ -131,9 +201,10 @@ export const replicatePool = createAsyncThunk(
 
 export const editPool = createAsyncThunk(
   POOL_EDIT_POOL,
-  async (poolDetails, thunkAPI) => {
+  async (payload, thunkAPI) => {
+    const { poolId, poolDetails } = payload;
     try {
-      const response = await poolReplication(poolDetails);
+      const response = await poolUpdation(poolId, poolDetails);
       console.log(response);
       // eslint-disable-next-line @typescript-eslint/no-use-before-define
       thunkAPI.dispatch(clearInputs());
@@ -150,7 +221,6 @@ export const archivePool = createAsyncThunk(
     if (!poolId) return;
     try {
       const response = await poolArchive(poolId);
-      console.log(response);
       return response;
     } catch {
       return thunkAPI.rejectWithValue(error.message);
@@ -165,14 +235,14 @@ const poolSlice = createSlice({
     handleChange: (state, { payload }) => {
       const { name } = payload;
       let { value } = payload;
-      if (name === "startTime") {
+      if (name === "startTime" || name === "betEndTime") {
         value = new Date(value);
       }
       state[name] = value;
     },
     handleSelectChange: (state, payload) => {
       const { payload: checkedMatch } = payload;
-      const matchExists = state.selectedMatches.some(
+      const matchExists = state.selectedMatches.find(
         (selectedMatch: any) =>
           // eslint-disable-next-line radix
           parseInt(selectedMatch.espnMatchId) ===
@@ -215,8 +285,10 @@ const poolSlice = createSlice({
       const poolToBeEdited = allPools.find((pool: any) => {
         return parseInt(pool.id) === parseInt(poolId);
       });
-      console.log(poolToBeEdited);
-      state.editPool = poolToBeEdited;
+      state.editPoolId = poolToBeEdited.id;
+      state.poolName = poolToBeEdited.poolName;
+      state.fee = poolToBeEdited.fee;
+      state.protocolFee = poolToBeEdited.protocolFee;
     },
     setReplicatePoolId: (state, payload) => {
       const {
@@ -307,6 +379,24 @@ const poolSlice = createSlice({
       .addCase(createNewPool.rejected, (state, payload) => {
         console.log(payload);
         state.isCreatePoolLoading = false;
+      })
+      // ** Edit Existing Pool handlers are listed below ** //
+      .addCase(editPool.pending, (state) => {
+        state.isEditPoolLoading = true;
+      })
+      .addCase(editPool.fulfilled, (state, payload) => {
+        const {
+          payload: { updatedPool },
+        } = payload;
+        const allPools = state.allPools.filter(
+          (pool: any) => pool.id !== updatedPool.id
+        );
+        state.allPools = [...allPools, updatedPool];
+        state.isEditPoolLoading = false;
+      })
+      .addCase(editPool.rejected, (state, payload) => {
+        console.log(payload);
+        state.isEditPoolLoading = false;
       })
       // ** Replicate Pool handlers are listed below ** //
       .addCase(replicatePool.pending, (state) => {

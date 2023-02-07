@@ -14,10 +14,10 @@ import {
   Select,
   Heading,
 } from "@chakra-ui/react";
-import axios from "axios";
+import { useCallback, useEffect } from "react";
+import { useAccount } from "wagmi";
 import { useDispatch, useSelector } from "react-redux";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { fetchPools } from "utils/apiCalls";
+
 import {
   handleChange,
   fetchAllPools,
@@ -25,11 +25,13 @@ import {
   fetchAllLeagues,
   fetchAllMatches,
 } from "redux/slices/poolSlice";
-import PoolTable from "./PoolTable";
+
 import CreatePoolTable from "./CreatePoolTable";
+import PoolTable from "./PoolTable";
 
 const DashBoardTabs = () => {
   const dispatch = useDispatch();
+  const { address, isConnected } = useAccount();
   const {
     sport,
     sports,
@@ -42,8 +44,7 @@ const DashBoardTabs = () => {
   } = useSelector((store) => store.pools);
 
   const onInputChange = (e: unknown) => {
-    const name = e.target.name;
-    const value = e.target.value;
+    const { name, value } = e.target;
     dispatch(handleChange({ name, value }));
   };
 
@@ -69,6 +70,16 @@ const DashBoardTabs = () => {
     }
   }, [league, sport]);
 
+  useEffect(() => {
+    if (sports.length > 0) return;
+    fetchSports();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fetchSports]);
+
+  useEffect(() => {
+    fetchLeagues();
+  }, [sport, fetchLeagues]);
+
   const fetchPoolsData = useCallback(async () => {
     try {
       dispatch(fetchAllPools());
@@ -83,19 +94,9 @@ const DashBoardTabs = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fetchPoolsData]);
 
-  useEffect(() => {
-    if (sports.length > 0) return;
-    fetchSports();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fetchSports]);
-
-  useEffect(() => {
-    fetchLeagues();
-  }, [sport, fetchLeagues]);
-
-  useEffect(() => {
-    fetchMatches();
-  }, [league, fetchMatches]);
+  // useEffect(() => {
+  //   fetchMatches();
+  // }, [league, fetchMatches]);
 
   return (
     <Box textAlign="center" w="full">

@@ -20,17 +20,20 @@ import {
 } from "@chakra-ui/react";
 import Pagination from "@choc-ui/paginator";
 import moment from "moment";
-import { useState, forwardRef } from "react";
+import { useState, forwardRef, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
+
 import { CreatePoolModal } from "../modals/CreatePool";
 import { handleSelectChange } from "redux/slices/poolSlice";
 
 const CreatePoolTable = () => {
   const dispatch = useDispatch();
   const header = ["", "Pool Name", "Match", "Date & Time"];
-  const { league, allMatches, selectedMatches } = useSelector(
+  const { sport, league, allMatches, selectedMatches } = useSelector(
     (store) => store.pools
   );
+
+  const [matches, setMatches] = useState([selectedMatches]);
 
   const [current, setCurrent] = useState(1);
   const pageSize = 5;
@@ -67,6 +70,12 @@ const CreatePoolTable = () => {
     dispatch(handleSelectChange(checkedMatch));
   };
 
+  useEffect(() => {
+    console.log("running");
+    setMatches(selectedMatches);
+    console.log(matches);
+  }, [selectedMatches.length]);
+
   return (
     <Flex w="full" alignItems="center" justifyContent="center">
       <TableContainer w="full">
@@ -84,6 +93,7 @@ const CreatePoolTable = () => {
                 colorScheme="teal"
                 color="#111"
                 onClick={onOpen}
+                isDisabled={!sport || !league || !selectedMatches.length}
               >
                 Add Pool
               </Button>
@@ -132,12 +142,16 @@ const CreatePoolTable = () => {
                       <Checkbox
                         size="lg"
                         colorScheme="teal"
-                        checked={selectedMatches.find(
-                          (selectedMatch: any) =>
-                            // eslint-disable-next-line radix
-                            parseInt(selectedMatch.espnMatchId) ===
-                            parseInt(match.espnMatchId)
-                        )}
+                        isChecked={
+                          matches &&
+                          matches.length &&
+                          matches.find((selectedMatch: any) => {
+                            return (
+                              parseInt(match.espnMatchId) ===
+                              parseInt(selectedMatch.espnMatchId)
+                            );
+                          })
+                        }
                         onChange={() => onSelectChange(match)}
                       />
                     </Td>
@@ -150,7 +164,7 @@ const CreatePoolTable = () => {
                     </Td>
                     <Td color="#fff" fontSize="md" fontWeight="hairline">
                       {moment(parseFloat(`${match.startTime}`)).format(
-                        "MM-DD-YYYY HH:MM"
+                        "MM-DD-YYYY hh:mm A"
                       )}
                     </Td>
                   </Tr>

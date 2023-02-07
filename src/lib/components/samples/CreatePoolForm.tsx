@@ -4,14 +4,24 @@ import {
   FormLabel,
   Input,
   Stack,
-  useColorModeValue,
   Select,
+  useColorModeValue,
 } from "@chakra-ui/react";
+import { useEffect } from "react";
+import { useAccount } from "wagmi";
+import { capMaxTime } from "utils/helpers";
+import { DatePicker } from "chakra-ui-date-input";
 import { useDispatch, useSelector } from "react-redux";
-import { handleChange, createNewPool } from "redux/slices/poolSlice";
+import {
+  handleChange,
+  createNewPool,
+  setMaxBetEndTime,
+} from "redux/slices/poolSlice";
+import moment from "moment";
 
 export const CreatePoolForm = () => {
   const dispatch = useDispatch();
+  const { address, isConnected } = useAccount();
   const {
     fee,
     protocolFee,
@@ -22,28 +32,40 @@ export const CreatePoolForm = () => {
     startTime,
     selectedMatches,
     isCreatePoolLoading,
+    betEndTime,
+    maxBetEndTime,
   } = useSelector((store) => store.pools);
 
   const onInputChange = (e: unknown) => {
-    const name = e.target.name;
-    const value = e.target.value;
+    const { name, value } = e.target;
     dispatch(handleChange({ name, value }));
   };
 
   const onCreatePool = async (e: unknown) => {
     e.preventDefault();
-    const payload = {
-      sport,
-      poolName,
-      leagueName: league,
-      startTime,
-      fee,
-      protocolFee,
-      matches: selectedMatches,
-      rewardPercentage,
-    };
-    dispatch(createNewPool(payload));
+    // if (!address && !isConnected) return "Please connect you wallet";
+    try {
+      const payload = {
+        sport,
+        poolName,
+        leagueName: league,
+        startTime,
+        fee,
+        protocolFee,
+        matches: selectedMatches,
+        rewardPercentage,
+      };
+      dispatch(createNewPool(payload));
+    } catch (err) {
+      console.log(err);
+    }
+    // if (!address && !isConnected) return "Please connect you wallet";
   };
+
+  // useEffect(() => {
+  //   const sortedMatches = capMaxTime(selectedMatches);
+  //   dispatch(setMaxBetEndTime(sortedMatches[0].startTime));
+  // }, []);
 
   return (
     <Stack
@@ -67,16 +89,18 @@ export const CreatePoolForm = () => {
           focusBorderColor={useColorModeValue("blue.500", "blue.200")}
         />
       </FormControl>
+
       <FormControl id="startTime">
         <FormLabel srOnly>Start Time</FormLabel>
         <Input
           size="md"
-          type="date"
           name="startTime"
+          type="datetime-local"
           onChange={onInputChange}
           placeholder="Select Date"
         />
       </FormControl>
+
       <FormControl id="fee">
         <FormLabel srOnly>Fee</FormLabel>
         <Input
@@ -130,7 +154,14 @@ export const CreatePoolForm = () => {
         }}
         size="lg"
         onClick={onCreatePool}
-        disabled={isCreatePoolLoading}
+        disabled={
+          !fee ||
+          !poolName ||
+          !startTime ||
+          !protocolFee ||
+          !rewardPercentage ||
+          isCreatePoolLoading
+        }
       >
         Create Pool
       </Button>
