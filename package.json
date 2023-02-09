@@ -2,7 +2,7 @@
   "name": "bundles-admin",
   "version": "0.1.0",
   "private": true,
-  "author": "sourabh",
+  "author": "Bundles Bets",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -20,7 +20,8 @@
     "up-latest": "yarn up --latest",
     "release": "cross-env HUSKY=0 standard-version",
     "push-release": "git push --follow-tags origin main",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "generate": "npx typechain --target=ethers-v5 \"./src/contracts/*.json\" --out-dir \"./src/types\""
   },
   "dependencies": {
     "@chakra-ui/react": "^2.4.6",
@@ -28,8 +29,10 @@
     "@emotion/react": "^11.10.5",
     "@emotion/styled": "^11.10.5",
     "@rainbow-me/rainbowkit": "^0.8.1",
+    "@reduxjs/toolkit": "^1.9.1",
     "@types/react-table": "^7.7.14",
     "axios": "^1.2.4",
+    "bn.js": "^5.2.1",
     "ethers": "^5.0.0",
     "framer-motion": "^8.4.3",
     "moment": "^2.29.4",
@@ -39,6 +42,7 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-icons": "^4.7.1",
+    "react-redux": "^8.0.5",
     "react-table": "^7.8.0",
     "wagmi": "^0.9.0"
   },
@@ -46,6 +50,7 @@
     "@commitlint/config-conventional": "^17.4.0",
     "@commitlint/cz-commitlint": "^17.4.1",
     "@playwright/test": "^1.29.1",
+    "@typechain/ethers-v5": "^10.2.0",
     "@types/react": "^18.0.26",
     "commitizen": "^4.2.6",
     "commitlint": "^17.4.1",
@@ -59,6 +64,10 @@
     "prettier": "^2.8.1",
     "standard-version": "^9.5.0",
     "turbo": "^1.6.3",
+    "typechain": "^8.1.1",
     "typescript": "^4.9.4"
+  },
+  "engines": {
+    "node": ">=14.0.0"
   }
 }

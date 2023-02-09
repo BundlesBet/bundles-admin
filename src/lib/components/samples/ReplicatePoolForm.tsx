@@ -5,47 +5,40 @@ import {
   Input,
   Stack,
   Select,
-  useToast,
   useColorModeValue,
+  useToast,
 } from "@chakra-ui/react";
-import { useEffect } from "react";
 import { ethers } from "ethers";
-import { useAccount, useBalance } from "wagmi";
-import { useDispatch, useSelector } from "react-redux";
+import { useState, useEffect } from "react";
+import { contractDetails } from "config";
+import { useSelector, useDispatch } from "react-redux";
+import { ADD_POOL_CONTRACT_CALL } from "utils/constants";
+import { useAccount, useContractWrite, usePrepareContractWrite } from "wagmi";
 import {
-  handleChange,
-  createNewPool,
-  setBetEndTime,
-  setContractMatchIds,
-} from "redux/slices/poolSlice";
-import moment from "moment";
-import {
-  prepareWriteContract,
   readContract,
   writeContract,
+  prepareWriteContract,
 } from "wagmi/actions";
-import { useContractWrite, usePrepareContractWrite } from "wagmi";
-import { contractDetails } from "config";
-import { ADD_POOL_CONTRACT_CALL } from "utils/constants";
 
-export const CreatePoolForm = () => {
+import {
+  handleChange,
+  replicatePool,
+  setContractMatchIds,
+} from "redux/slices/poolSlice";
+
+export const ReplicatePoolForm = () => {
+  const toast = useToast();
   const dispatch = useDispatch();
   const { address, isConnected } = useAccount();
   const {
     fee,
-    protocolFee,
     poolName,
+    protocolFee,
     rewardPercentage,
-    sport,
-    league,
-    startTime,
-    selectedMatches,
-    isCreatePoolLoading,
-    betEndTime,
     contractMatchIds,
+    poolToBeReplicated,
+    isReplicatePoolLoading,
   } = useSelector((store) => store.pools);
-
-  const toast = useToast();
 
   const onInputChange = (e: unknown) => {
     const { name, value } = e.target;
@@ -53,13 +46,35 @@ export const CreatePoolForm = () => {
   };
 
   useEffect(() => {
-    if (!selectedMatches.length) return;
-    dispatch(setBetEndTime(selectedMatches));
-    dispatch(setContractMatchIds(selectedMatches));
+    if (!poolToBeReplicated.id) return;
+    dispatch(setContractMatchIds(poolToBeReplicated.matches));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedMatches.length]);
+  }, [poolToBeReplicated.id]);
 
-  const onCreatePool = async (e: unknown) => {
+  console.log(poolToBeReplicated.startTime);
+  console.log(typeof new Date(poolToBeReplicated.startTime).getTime());
+  console.log(new Date(poolToBeReplicated.startTime).getTime() / 1000);
+
+  // const { config } = usePrepareContractWrite({
+  //   address: contractDetails.adminContract.address,
+  //   abi: contractDetails.adminContract.abi,
+  //   chainId: contractDetails.adminContract.chainId,
+  //   functionName: ADD_POOL_CONTRACT_CALL,
+  //   args: [
+  //     poolName,
+  //     ethers.utils.parseUnits(fee, "ether"),
+  //     ethers.utils.parseUnits(protocolFee, "ether"),
+  //     new Date(poolToBeReplicated.startTime).getTime(),
+  //     new Date(poolToBeReplicated.betEndTime).getTime(),
+  //     contractMatchIds,
+  //     1000,
+  //   ],
+  //   enabled: true,
+  // });
+
+  // const { writeAsync } = useContractWrite(config);
+
+  const onReplicatePool = async (e: unknown) => {
     e.preventDefault();
     try {
       if (!address && !isConnected) {
@@ -84,11 +99,12 @@ export const CreatePoolForm = () => {
           poolName,
           ethers.utils.parseUnits(fee.toString(), "ether"),
           ethers.utils.parseUnits(protocolFee.toString(), "ether"),
-          startTime.getTime(),
-          betEndTime,
+          new Date(poolToBeReplicated.startTime).getTime(),
+          new Date(poolToBeReplicated.betEndTime).getTime(),
           contractMatchIds,
           1000,
         ],
+        enabled: true,
       });
 
       const response = await (await writeContract(config)).wait(1);
@@ -108,16 +124,14 @@ export const CreatePoolForm = () => {
       // (await writeAsync?.())?.wait(3).then((value) => {
       // console.log(value);
       const payload = {
-        sport,
-        poolName,
-        leagueName: league,
-        startTime,
         fee,
+        poolName,
         protocolFee,
-        matches: selectedMatches,
         rewardPercentage,
+        poolId: poolToBeReplicated.id,
       };
-      dispatch(createNewPool(payload));
+      dispatch(replicatePool(payload));
+      // onReplicatePool(e);
       // });
     } catch (err) {
       console.log(err);
@@ -136,55 +150,46 @@ export const CreatePoolForm = () => {
       <FormControl id="poolName">
         <FormLabel srOnly>Pool Name</FormLabel>
         <Input
-          size="lg"
           type="text"
-          fontSize="md"
+          placeholder="Enter Pool Name"
+          size="lg"
           name="poolName"
-          onChange={onInputChange}
+          fontSize="md"
           value={poolName}
-          placeholder="Enter your Pool Name"
+          onChange={onInputChange}
+          isDisabled={isReplicatePoolLoading}
           focusBorderColor={useColorModeValue("blue.500", "blue.200")}
         />
       </FormControl>
-
-      <FormControl id="startTime">
-        <FormLabel srOnly>Start Time</FormLabel>
-        <Input
-          size="md"
-          name="startTime"
-          type="datetime-local"
-          onChange={onInputChange}
-          placeholder="Select Date"
-          min={new Date().toISOString().slice(0, -8)}
-        />
-      </FormControl>
-
       <FormControl id="fee">
         <FormLabel srOnly>Fee</FormLabel>
         <Input
-          size="lg"
-          name="fee"
           type="number"
-          fontSize="md"
-          value={fee}
           placeholder="Enter Fee"
+          size="lg"
+          fontSize="md"
+          name="fee"
+          value={fee}
           onChange={onInputChange}
+          isDisabled={isReplicatePoolLoading}
           focusBorderColor={useColorModeValue("blue.500", "blue.200")}
         />
       </FormControl>
       <FormControl id="protocolFee">
         <FormLabel srOnly>Protocol Fee</FormLabel>
         <Input
-          size="lg"
           type="number"
+          placeholder="Enter Protocol Fee"
+          size="lg"
           fontSize="md"
           name="protocolFee"
           value={protocolFee}
+          isDisabled={isReplicatePoolLoading}
           onChange={onInputChange}
-          placeholder="Enter Protocol Fee"
           focusBorderColor={useColorModeValue("blue.500", "blue.200")}
         />
       </FormControl>
+
       <Select
         id="rewardPercentage"
         borderColor="#00ffc2"
@@ -192,6 +197,7 @@ export const CreatePoolForm = () => {
         onChange={onInputChange}
         placeholder="Select Pool Reward %"
         value={rewardPercentage}
+        isDisabled={isReplicatePoolLoading}
         _selected={{ borderColor: "#00ffc2" }}
       >
         <option value="10">10%</option>
@@ -211,20 +217,18 @@ export const CreatePoolForm = () => {
           bg: "#00ffc2",
         }}
         size="lg"
-        onClick={(e) => onCreatePool(e)}
-        disabled={
+        isDisabled={
           !fee ||
           !address ||
           !poolName ||
-          !startTime ||
-          !betEndTime ||
-          !protocolFee ||
           !isConnected ||
+          !protocolFee ||
           !rewardPercentage ||
-          isCreatePoolLoading
+          isReplicatePoolLoading
         }
+        onClick={(e) => onReplicatePool(e)}
       >
-        Create Pool
+        Replicate Pool
       </Button>
     </Stack>
   );
