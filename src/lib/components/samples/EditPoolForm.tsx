@@ -5,13 +5,20 @@ import {
   Input,
   Stack,
   useColorModeValue,
+  useToast,
 } from "@chakra-ui/react";
-import { useState } from "react";
-import { useAccount } from "wagmi";
-import { DatePicker } from "chakra-ui-date-input";
+import {
+  readContract,
+  writeContract,
+  prepareWriteContract,
+} from "wagmi/actions";
+import { ethers } from "ethers";
+import { contractDetails } from "config";
+import { useAccount, useBalance } from "wagmi";
 import { useDispatch, useSelector } from "react-redux";
-
 import { editPool, handleChange } from "redux/slices/poolSlice";
+import { useContractWrite, usePrepareContractWrite } from "wagmi";
+import { UPDATE_POOL_CONTRACT_CALL } from "utils/constants";
 
 interface PoolEditProps {
   close: any;
@@ -19,7 +26,9 @@ interface PoolEditProps {
 
 export const EditPoolForm = (props: PoolEditProps) => {
   const dispatch = useDispatch();
+  const toast = useToast();
   const { address, isConnected } = useAccount();
+
   const { editPoolId, isEditPoolLoading, poolName, fee, protocolFee } =
     useSelector((store) => store.pools);
 
@@ -31,15 +40,52 @@ export const EditPoolForm = (props: PoolEditProps) => {
   const onEditPool = async (e: unknown) => {
     e.preventDefault();
     // if (!address && !isConnected) return "Please connect you wallet";
-    if (!poolName || !fee || !protocolFee || !editPoolId)
-      return console.log("Please fill out all the required fields)");
     try {
+      if (!address && !isConnected) {
+        toast({
+          position: "top-right",
+          title: "Please connect your wallet.",
+          description: "No account connected",
+          status: "error",
+          duration: 4000,
+          isClosable: true,
+        });
+        // close();
+        return;
+      }
+      const config = await prepareWriteContract({
+        address: contractDetails.adminContract.address,
+        abi: contractDetails.adminContract.abi,
+        chainId: contractDetails.adminContract.chainId,
+        functionName: UPDATE_POOL_CONTRACT_CALL,
+        args: [
+          editPoolId,
+          poolName,
+          ethers.utils.parseUnits(fee.toString(), "ether"),
+          ethers.utils.parseUnits(protocolFee.toString(), "ether"),
+        ],
+      });
+
+      const response = await (await writeContract(config)).wait(1);
+
+      if (!response) {
+        toast({
+          position: "top-right",
+          title: "Transaction Failed",
+          description: "Some error occured.",
+          status: "error",
+          duration: 4000,
+          isClosable: true,
+        });
+        return;
+      }
       const payload = {
         poolName,
-        fee,
-        protocolFee,
+        fee: parseInt(fee),
+        protocolFee: parseInt(protocolFee),
       };
       dispatch(editPool({ poolId: editPoolId, poolDetails: payload }));
+      // });
       // close();
     } catch (error) {
       console.log(error);
@@ -107,8 +153,15 @@ export const EditPoolForm = (props: PoolEditProps) => {
           bg: "#00ffc2",
         }}
         size="lg"
-        disabled={!poolName || !fee || !protocolFee || isEditPoolLoading}
-        onClick={onEditPool}
+        disabled={
+          !fee ||
+          !address ||
+          !poolName ||
+          !isConnected ||
+          !protocolFee ||
+          isEditPoolLoading
+        }
+        onClick={(e) => onEditPool(e)}
       >
         Edit Pool
       </Button>

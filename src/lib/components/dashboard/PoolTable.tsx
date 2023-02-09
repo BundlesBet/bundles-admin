@@ -20,9 +20,25 @@ import {
   useDisclosure,
   Alert,
   AlertIcon,
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+  PopoverHeader,
+  PopoverArrow,
+  PopoverCloseButton,
+  PopoverBody,
+  PopoverFooter,
+  useBoolean,
+  useToast,
 } from "@chakra-ui/react";
+import { contractDetails } from "config";
 import Pagination from "@choc-ui/paginator";
 import moment from "moment";
+import {
+  readContract,
+  writeContract,
+  prepareWriteContract,
+} from "wagmi/actions";
 import { BiCopy } from "react-icons/bi";
 import { BsFillTrashFill } from "react-icons/bs";
 import { FaEdit } from "react-icons/fa";
@@ -34,13 +50,19 @@ import {
   archivePool,
   fetchAllPools,
   handleEditPool,
+  setArchivePoolId,
   setReplicatePoolId,
 } from "redux/slices/poolSlice";
+import { useAccount, useContractWrite, usePrepareContractWrite } from "wagmi";
+import { ARCHIVE_POOL_CONTRACT_CALL } from "utils/constants";
 
 const PoolTable = () => {
   const dispatch = useDispatch();
+  const toast = useToast();
+  const { address, isConnected } = useAccount();
   const {
     allPools,
+    archivePoolId,
     isEditPoolLoading,
     isArchivePoolLoading,
     isReplicatePoolLoading,
@@ -100,8 +122,66 @@ const PoolTable = () => {
   };
 
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const { on, off, toggle } = useBoolean();
 
-  if (!pools.length) {
+  // const { config } = usePrepareContractWrite({
+  //   address: contractDetails.adminContract.address,
+  //   abi: contractDetails.adminContract.abi,
+  //   chainId: contractDetails.adminContract.chainId,
+  //   functionName: ARCHIVE_POOL_CONTRACT_CALL,
+  //   args: [archivePoolId],
+  // });
+
+  // const { writeAsync } = useContractWrite(config);
+
+  const onPoolArchive = async () => {
+    try {
+      if (!address && !isConnected) {
+        toast({
+          position: "top-right",
+          title: "Please connect your wallet.",
+          description: "No account connected",
+          status: "error",
+          duration: 4000,
+          isClosable: true,
+        });
+        // close();
+        return;
+      }
+
+      const config = await prepareWriteContract({
+        address: contractDetails.adminContract.address,
+        abi: contractDetails.adminContract.abi,
+        chainId: contractDetails.adminContract.chainId,
+        functionName: ARCHIVE_POOL_CONTRACT_CALL,
+        args: [archivePoolId],
+      });
+
+      const response = await (await writeContract(config)).wait(1);
+
+      if (!response) {
+        toast({
+          position: "top-right",
+          title: "Transaction Failed",
+          description: "Some error occured.",
+          status: "error",
+          duration: 4000,
+          isClosable: true,
+        });
+        return;
+      }
+
+      // (await writeAsync?.())?.wait(3).then((value) => {
+      //   console.log(value);
+      dispatch(archivePool(archivePoolId));
+      // });
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  console.log(allPools);
+  if (!allPools.length) {
     return (
       <Alert status="warning">
         <AlertIcon />
@@ -309,19 +389,58 @@ const PoolTable = () => {
                               label="Archive"
                               placement="top"
                             >
-                              <IconButton
-                                colorScheme="green"
-                                icon={<BsFillTrashFill />}
-                                aria-label="Edit"
-                                isDisabled={
-                                  isEditPoolLoading ||
-                                  isArchivePoolLoading ||
-                                  isReplicatePoolLoading
-                                }
-                                onClick={(e) =>
-                                  dispatch(archivePool({ poolId: pool.id }))
-                                }
-                              />
+                              <Popover>
+                                <PopoverTrigger>
+                                  <IconButton
+                                    colorScheme="green"
+                                    icon={<BsFillTrashFill />}
+                                    aria-label="Edit"
+                                    isDisabled={
+                                      isEditPoolLoading ||
+                                      isArchivePoolLoading ||
+                                      isReplicatePoolLoading
+                                    }
+                                    onClick={() =>
+                                      dispatch(setArchivePoolId(pool.id))
+                                    }
+                                  />
+                                </PopoverTrigger>
+                                <PopoverContent
+                                  color="white"
+                                  bg="#1C1C26"
+                                  borderColor="blue.800"
+                                  borderRadius="2xl"
+                                >
+                                  <PopoverHeader fontWeight="semibold">
+                                    Confirmation
+                                  </PopoverHeader>
+                                  <PopoverArrow />
+                                  <PopoverCloseButton />
+                                  <PopoverBody>
+                                    Are you sure you want to archive this pool?
+                                  </PopoverBody>
+                                  <PopoverFooter
+                                    display="flex"
+                                    justifyContent="flex-end"
+                                  >
+                                    <ButtonGroup size="sm">
+                                      <Button
+                                        variant="outline"
+                                        as={PopoverCloseButton}
+                                      >
+                                        Cancel
+                                      </Button>
+                                      <Button
+                                        bg="#0EB634"
+                                        color="#111"
+                                        onClick={onPoolArchive}
+                                      >
+                                        Archive
+                                      </Button>
+                                    </ButtonGroup>
+                                  </PopoverFooter>
+                                </PopoverContent>
+                              </Popover>
                             </Tooltip>
                             <Tooltip
                               hasArrow

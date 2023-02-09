@@ -6,23 +6,37 @@ import {
   Stack,
   Select,
   useColorModeValue,
+  useToast,
 } from "@chakra-ui/react";
-import axios from "axios";
-import { useState } from "react";
-import { useAccount } from "wagmi";
+import { ethers } from "ethers";
+import { useState, useEffect } from "react";
+import { contractDetails } from "config";
 import { useSelector, useDispatch } from "react-redux";
+import { ADD_POOL_CONTRACT_CALL } from "utils/constants";
+import { useAccount, useContractWrite, usePrepareContractWrite } from "wagmi";
+import {
+  readContract,
+  writeContract,
+  prepareWriteContract,
+} from "wagmi/actions";
 
-import { handleChange, replicatePool } from "redux/slices/poolSlice";
+import {
+  handleChange,
+  replicatePool,
+  setContractMatchIds,
+} from "redux/slices/poolSlice";
 
 export const ReplicatePoolForm = () => {
+  const toast = useToast();
   const dispatch = useDispatch();
   const { address, isConnected } = useAccount();
   const {
     fee,
     poolName,
     protocolFee,
-    replicatePoolId,
     rewardPercentage,
+    contractMatchIds,
+    poolToBeReplicated,
     isReplicatePoolLoading,
   } = useSelector((store) => store.pools);
 
@@ -31,19 +45,97 @@ export const ReplicatePoolForm = () => {
     dispatch(handleChange({ name, value }));
   };
 
+  useEffect(() => {
+    if (!poolToBeReplicated.id) return;
+    dispatch(setContractMatchIds(poolToBeReplicated.matches));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [poolToBeReplicated.id]);
+
+  console.log(poolToBeReplicated.startTime);
+  console.log(typeof new Date(poolToBeReplicated.startTime).getTime());
+  console.log(new Date(poolToBeReplicated.startTime).getTime() / 1000);
+
+  // const { config } = usePrepareContractWrite({
+  //   address: contractDetails.adminContract.address,
+  //   abi: contractDetails.adminContract.abi,
+  //   chainId: contractDetails.adminContract.chainId,
+  //   functionName: ADD_POOL_CONTRACT_CALL,
+  //   args: [
+  //     poolName,
+  //     ethers.utils.parseUnits(fee, "ether"),
+  //     ethers.utils.parseUnits(protocolFee, "ether"),
+  //     new Date(poolToBeReplicated.startTime).getTime(),
+  //     new Date(poolToBeReplicated.betEndTime).getTime(),
+  //     contractMatchIds,
+  //     1000,
+  //   ],
+  //   enabled: true,
+  // });
+
+  // const { writeAsync } = useContractWrite(config);
+
   const onReplicatePool = async (e: unknown) => {
     e.preventDefault();
-    // if (!address && !isConnected)
-    // return console.log("Please connect you wallet");
-    if (!replicatePoolId) return;
-    const payload = {
-      fee,
-      poolName,
-      protocolFee,
-      poolId: replicatePoolId,
-      rewardPercentage,
-    };
-    dispatch(replicatePool(payload));
+    try {
+      if (!address && !isConnected) {
+        toast({
+          position: "top-right",
+          title: "Please connect your wallet.",
+          description: "No account connected",
+          status: "error",
+          duration: 4000,
+          isClosable: true,
+        });
+        // close();
+        return;
+      }
+
+      const config = await prepareWriteContract({
+        address: contractDetails.adminContract.address,
+        abi: contractDetails.adminContract.abi,
+        chainId: contractDetails.adminContract.chainId,
+        functionName: ADD_POOL_CONTRACT_CALL,
+        args: [
+          poolName,
+          ethers.utils.parseUnits(fee.toString(), "ether"),
+          ethers.utils.parseUnits(protocolFee.toString(), "ether"),
+          new Date(poolToBeReplicated.startTime).getTime(),
+          new Date(poolToBeReplicated.betEndTime).getTime(),
+          contractMatchIds,
+          1000,
+        ],
+        enabled: true,
+      });
+
+      const response = await (await writeContract(config)).wait(1);
+
+      if (!response) {
+        toast({
+          position: "top-right",
+          title: "Transaction Failed",
+          description: "Some error occured.",
+          status: "error",
+          duration: 4000,
+          isClosable: true,
+        });
+        return;
+      }
+
+      // (await writeAsync?.())?.wait(3).then((value) => {
+      // console.log(value);
+      const payload = {
+        fee,
+        poolName,
+        protocolFee,
+        rewardPercentage,
+        poolId: poolToBeReplicated.id,
+      };
+      dispatch(replicatePool(payload));
+      // onReplicatePool(e);
+      // });
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   return (
@@ -127,12 +219,14 @@ export const ReplicatePoolForm = () => {
         size="lg"
         isDisabled={
           !fee ||
+          !address ||
           !poolName ||
+          !isConnected ||
           !protocolFee ||
           !rewardPercentage ||
           isReplicatePoolLoading
         }
-        onClick={onReplicatePool}
+        onClick={(e) => onReplicatePool(e)}
       >
         Replicate Pool
       </Button>

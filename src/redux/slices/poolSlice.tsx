@@ -1,4 +1,7 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { useContractWrite, usePrepareContractWrite } from "wagmi";
+import { contractDetails } from "config";
+import { capMaxBetEndTime, extractMatchIds } from "utils/helpers";
 import {
   createPool,
   fetchPools,
@@ -53,7 +56,7 @@ const initialState = {
         },
       },
       espnMatchId: 401492629,
-      startTime: 1675792230000,
+      startTime: 1676219940000,
       name: "AFC  at NFC ",
     },
     {
@@ -76,7 +79,7 @@ const initialState = {
         },
       },
       espnMatchId: 401437932,
-      startTime: 1675791330000,
+      startTime: 1676133540000,
       name: "AFC  at NFC ",
     },
     {
@@ -99,18 +102,20 @@ const initialState = {
         },
       },
       espnMatchId: 401437938,
-      startTime: 1675793730000,
+      startTime: 1676306340000,
       name: "AFC  at NFC ",
     },
   ],
   protocolFee: "",
+  betEndTime: null,
   isLoading: false,
-  replicatePoolId: "",
+  archivePoolId: null,
   allPools: [] as any,
   rewardPercentage: "",
   isPoolEditing: false,
+  contractMatchIds: [],
   startTime: new Date(),
-  betEndTime: new Date(),
+  poolToBeReplicated: {},
   isEditPoolLoading: false,
   isAllSportsLoading: false,
   isAllLeaguesLoading: false,
@@ -118,7 +123,6 @@ const initialState = {
   isAllMatchesLoading: false,
   isCreatePoolLoading: false,
   isArchivePoolLoading: false,
-  maxBetEndTime: new Date(),
   isReplicatePoolLoading: false,
 };
 
@@ -126,6 +130,7 @@ export const fetchAllPools = createAsyncThunk(
   POOL_FETCH_POOLS,
   async (_, thunkAPI) => {
     try {
+      console.log("fetchAllPools running");
       return await fetchPools();
     } catch (error) {
       console.log(error);
@@ -175,6 +180,7 @@ export const createNewPool = createAsyncThunk(
   POOL_CREATE_POOL,
   async (poolDetails, thunkAPI) => {
     try {
+      console.log("running");
       const response = await createPool(poolDetails);
       // eslint-disable-next-line @typescript-eslint/no-use-before-define
       thunkAPI.dispatch(clearInputs());
@@ -205,7 +211,6 @@ export const editPool = createAsyncThunk(
     const { poolId, poolDetails } = payload;
     try {
       const response = await poolUpdation(poolId, poolDetails);
-      console.log(response);
       // eslint-disable-next-line @typescript-eslint/no-use-before-define
       thunkAPI.dispatch(clearInputs());
       return response;
@@ -217,10 +222,10 @@ export const editPool = createAsyncThunk(
 
 export const archivePool = createAsyncThunk(
   POOL_ARCHIVE_POOL,
-  async ({ poolId }, thunkAPI) => {
+  async (poolId, thunkAPI) => {
     if (!poolId) return;
     try {
-      const response = await poolArchive(poolId);
+      await poolArchive(poolId);
       return response;
     } catch {
       return thunkAPI.rejectWithValue(error.message);
@@ -235,7 +240,7 @@ const poolSlice = createSlice({
     handleChange: (state, { payload }) => {
       const { name } = payload;
       let { value } = payload;
-      if (name === "startTime" || name === "betEndTime") {
+      if (name === "startTime") {
         value = new Date(value);
       }
       state[name] = value;
@@ -289,12 +294,31 @@ const poolSlice = createSlice({
       state.poolName = poolToBeEdited.poolName;
       state.fee = poolToBeEdited.fee;
       state.protocolFee = poolToBeEdited.protocolFee;
+      state.rewardPercentage = poolToBeEdited.rewardPercentage;
     },
     setReplicatePoolId: (state, payload) => {
       const {
         payload: { poolId },
       } = payload;
-      state.replicatePoolId = poolId;
+      state.poolToBeReplicated = state.allPools.find(
+        (pool) => pool.id === poolId
+      );
+    },
+    setBetEndTime: (state, payload) => {
+      const { payload: selectedMatches } = payload;
+      const sortedMatches = capMaxBetEndTime(selectedMatches);
+      state.betEndTime = sortedMatches[0].startTime;
+    },
+    setContractMatchIds: (state, payload) => {
+      const { payload: selectedMatches } = payload;
+      const selectedMatchIds = extractMatchIds(selectedMatches);
+      state.contractMatchIds = selectedMatchIds;
+    },
+    setArchivePoolId: (state, payload) => {
+      const { payload: poolId } = payload;
+      console.log(payload);
+      console.log(poolId);
+      state.archivePoolId = poolId;
     },
   },
   extraReducers: (builder) => {
@@ -418,6 +442,9 @@ const poolSlice = createSlice({
         state.isArchivePoolLoading = true;
       })
       .addCase(archivePool.fulfilled, (state, payload) => {
+        state.allPools = state.allPools.filter(
+          (pool: any) => pool.id !== archivePoolId
+        );
         state.isArchivePoolLoading = false;
       })
       .addCase(archivePool.rejected, (state, payload) => {
@@ -430,7 +457,10 @@ const poolSlice = createSlice({
 export const {
   clearInputs,
   handleChange,
+  setBetEndTime,
   handleEditPool,
+  setContractMatchIds,
+  setArchivePoolId,
   setReplicatePoolId,
   handleSelectChange,
 } = poolSlice.actions;

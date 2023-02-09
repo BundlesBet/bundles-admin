@@ -8,8 +8,7 @@ import defaultSEOConfig from "../../next-seo.config";
 import { Chakra } from "lib/components/Chakra";
 import Layout from "lib/layout";
 import "lib/styles/globals.css";
-
-import { configureChains, createClient, WagmiConfig } from "wagmi";
+import { useAccount, configureChains, createClient, WagmiConfig } from "wagmi";
 import { polygonMumbai, polygon } from "wagmi/chains";
 import { alchemyProvider } from "wagmi/providers/alchemy";
 import { publicProvider } from "wagmi/providers/public";
@@ -25,6 +24,8 @@ import { useRouter } from "next/router";
 import Footer from "lib/layout/Footer";
 import store from "redux/store";
 import { Provider } from "react-redux";
+import { useEffect } from "react";
+import { useToast } from "@chakra-ui/react";
 
 const { chains, provider, webSocketProvider } = configureChains(
   [
@@ -65,6 +66,23 @@ const theme: ThemeOptions = {
 const MyApp = ({ Component, pageProps }: AppProps) => {
   const loginRoutes = [urls.connectWallet];
   const router = useRouter();
+  const { address, isConnected } = useAccount();
+  const toast = useToast();
+
+  useEffect(() => {
+    if (!address && !isConnected) {
+      toast({
+        position: "top-right",
+        title: "Please connect your wallet.",
+        description: "No account connected",
+        status: "error",
+        duration: 4000,
+        isClosable: true,
+      });
+      router.push("/");
+    }
+  }, [address, isConnected]);
+
   return (
     <WagmiConfig client={wagmiClient}>
       <RainbowKitProvider

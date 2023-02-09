@@ -5,19 +5,28 @@ import {
   Input,
   Stack,
   Select,
+  useToast,
   useColorModeValue,
 } from "@chakra-ui/react";
 import { useEffect } from "react";
-import { useAccount } from "wagmi";
-import { capMaxTime } from "utils/helpers";
-import { DatePicker } from "chakra-ui-date-input";
+import { ethers } from "ethers";
+import { useAccount, useBalance } from "wagmi";
 import { useDispatch, useSelector } from "react-redux";
 import {
   handleChange,
   createNewPool,
-  setMaxBetEndTime,
+  setBetEndTime,
+  setContractMatchIds,
 } from "redux/slices/poolSlice";
 import moment from "moment";
+import {
+  prepareWriteContract,
+  readContract,
+  writeContract,
+} from "wagmi/actions";
+import { useContractWrite, usePrepareContractWrite } from "wagmi";
+import { contractDetails } from "config";
+import { ADD_POOL_CONTRACT_CALL } from "utils/constants";
 
 export const CreatePoolForm = () => {
   const dispatch = useDispatch();
@@ -33,18 +42,71 @@ export const CreatePoolForm = () => {
     selectedMatches,
     isCreatePoolLoading,
     betEndTime,
-    maxBetEndTime,
+    contractMatchIds,
   } = useSelector((store) => store.pools);
+
+  const toast = useToast();
 
   const onInputChange = (e: unknown) => {
     const { name, value } = e.target;
     dispatch(handleChange({ name, value }));
   };
 
+  useEffect(() => {
+    if (!selectedMatches.length) return;
+    dispatch(setBetEndTime(selectedMatches));
+    dispatch(setContractMatchIds(selectedMatches));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedMatches.length]);
+
   const onCreatePool = async (e: unknown) => {
     e.preventDefault();
-    // if (!address && !isConnected) return "Please connect you wallet";
     try {
+      if (!address && !isConnected) {
+        toast({
+          position: "top-right",
+          title: "Please connect your wallet.",
+          description: "No account connected",
+          status: "error",
+          duration: 4000,
+          isClosable: true,
+        });
+        // close();
+        return;
+      }
+
+      const config = await prepareWriteContract({
+        address: contractDetails.adminContract.address,
+        abi: contractDetails.adminContract.abi,
+        chainId: contractDetails.adminContract.chainId,
+        functionName: ADD_POOL_CONTRACT_CALL,
+        args: [
+          poolName,
+          ethers.utils.parseUnits(fee.toString(), "ether"),
+          ethers.utils.parseUnits(protocolFee.toString(), "ether"),
+          startTime.getTime(),
+          betEndTime,
+          contractMatchIds,
+          1000,
+        ],
+      });
+
+      const response = await (await writeContract(config)).wait(1);
+
+      if (!response) {
+        toast({
+          position: "top-right",
+          title: "Transaction Failed",
+          description: "Some error occured.",
+          status: "error",
+          duration: 4000,
+          isClosable: true,
+        });
+        return;
+      }
+
+      // (await writeAsync?.())?.wait(3).then((value) => {
+      // console.log(value);
       const payload = {
         sport,
         poolName,
@@ -56,16 +118,11 @@ export const CreatePoolForm = () => {
         rewardPercentage,
       };
       dispatch(createNewPool(payload));
+      // });
     } catch (err) {
       console.log(err);
     }
-    // if (!address && !isConnected) return "Please connect you wallet";
   };
-
-  // useEffect(() => {
-  //   const sortedMatches = capMaxTime(selectedMatches);
-  //   dispatch(setMaxBetEndTime(sortedMatches[0].startTime));
-  // }, []);
 
   return (
     <Stack
@@ -98,6 +155,7 @@ export const CreatePoolForm = () => {
           type="datetime-local"
           onChange={onInputChange}
           placeholder="Select Date"
+          min={new Date().toISOString().slice(0, -8)}
         />
       </FormControl>
 
@@ -153,12 +211,15 @@ export const CreatePoolForm = () => {
           bg: "#00ffc2",
         }}
         size="lg"
-        onClick={onCreatePool}
+        onClick={(e) => onCreatePool(e)}
         disabled={
           !fee ||
+          !address ||
           !poolName ||
           !startTime ||
+          !betEndTime ||
           !protocolFee ||
+          !isConnected ||
           !rewardPercentage ||
           isCreatePoolLoading
         }

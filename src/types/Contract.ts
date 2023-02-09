@@ -26,19 +26,23 @@ import type {
 export interface ContractInterface extends utils.Interface {
   functions: {
     "addPoolData(string,uint256,uint256,uint256,uint256,string[],uint256)": FunctionFragment;
+    "archivePool(uint256)": FunctionFragment;
     "batchAddMatches(string[],string[],string[],string[])": FunctionFragment;
     "cancelBet(uint256)": FunctionFragment;
     "claimReward(uint256)": FunctionFragment;
     "placeBets(uint256,string[],uint256[])": FunctionFragment;
+    "updatePool(uint256,string,uint256,uint256)": FunctionFragment;
   };
 
   getFunction(
     nameOrSignatureOrTopic:
       | "addPoolData"
+      | "archivePool"
       | "batchAddMatches"
       | "cancelBet"
       | "claimReward"
       | "placeBets"
+      | "updatePool"
   ): FunctionFragment;
 
   encodeFunctionData(
@@ -52,6 +56,10 @@ export interface ContractInterface extends utils.Interface {
       PromiseOrValue<string>[],
       PromiseOrValue<BigNumberish>
     ]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "archivePool",
+    values: [PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
     functionFragment: "batchAddMatches",
@@ -78,9 +86,22 @@ export interface ContractInterface extends utils.Interface {
       PromiseOrValue<BigNumberish>[]
     ]
   ): string;
+  encodeFunctionData(
+    functionFragment: "updatePool",
+    values: [
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<string>,
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BigNumberish>
+    ]
+  ): string;
 
   decodeFunctionResult(
     functionFragment: "addPoolData",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "archivePool",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -93,6 +114,7 @@ export interface ContractInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "placeBets", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "updatePool", data: BytesLike): Result;
 
   events: {};
 }
@@ -135,6 +157,11 @@ export interface Contract extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
+    archivePool(
+      poolId: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
     batchAddMatches(
       espn_ids: PromiseOrValue<string>[],
       match_names: PromiseOrValue<string>[],
@@ -159,6 +186,14 @@ export interface Contract extends BaseContract {
       selections: PromiseOrValue<BigNumberish>[],
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
+
+    updatePool(
+      poolID: PromiseOrValue<BigNumberish>,
+      poolName: PromiseOrValue<string>,
+      entry_fee: PromiseOrValue<BigNumberish>,
+      protocolFee: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
   };
 
   addPoolData(
@@ -169,6 +204,11 @@ export interface Contract extends BaseContract {
     bet_end_time: PromiseOrValue<BigNumberish>,
     match_ids: PromiseOrValue<string>[],
     participants: PromiseOrValue<BigNumberish>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  archivePool(
+    poolId: PromiseOrValue<BigNumberish>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -197,6 +237,14 @@ export interface Contract extends BaseContract {
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
+  updatePool(
+    poolID: PromiseOrValue<BigNumberish>,
+    poolName: PromiseOrValue<string>,
+    entry_fee: PromiseOrValue<BigNumberish>,
+    protocolFee: PromiseOrValue<BigNumberish>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
   callStatic: {
     addPoolData(
       pool_name: PromiseOrValue<string>,
@@ -208,6 +256,11 @@ export interface Contract extends BaseContract {
       participants: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
+
+    archivePool(
+      poolId: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<void>;
 
     batchAddMatches(
       espn_ids: PromiseOrValue<string>[],
@@ -231,6 +284,14 @@ export interface Contract extends BaseContract {
       pool_id: PromiseOrValue<BigNumberish>,
       match_ids: PromiseOrValue<string>[],
       selections: PromiseOrValue<BigNumberish>[],
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    updatePool(
+      poolID: PromiseOrValue<BigNumberish>,
+      poolName: PromiseOrValue<string>,
+      entry_fee: PromiseOrValue<BigNumberish>,
+      protocolFee: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<void>;
   };
@@ -249,6 +310,11 @@ export interface Contract extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
+    archivePool(
+      poolId: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
     batchAddMatches(
       espn_ids: PromiseOrValue<string>[],
       match_names: PromiseOrValue<string>[],
@@ -271,6 +337,14 @@ export interface Contract extends BaseContract {
       pool_id: PromiseOrValue<BigNumberish>,
       match_ids: PromiseOrValue<string>[],
       selections: PromiseOrValue<BigNumberish>[],
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    updatePool(
+      poolID: PromiseOrValue<BigNumberish>,
+      poolName: PromiseOrValue<string>,
+      entry_fee: PromiseOrValue<BigNumberish>,
+      protocolFee: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
   };
@@ -287,6 +361,11 @@ export interface Contract extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
+    archivePool(
+      poolId: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
     batchAddMatches(
       espn_ids: PromiseOrValue<string>[],
       match_names: PromiseOrValue<string>[],
@@ -309,6 +388,14 @@ export interface Contract extends BaseContract {
       pool_id: PromiseOrValue<BigNumberish>,
       match_ids: PromiseOrValue<string>[],
       selections: PromiseOrValue<BigNumberish>[],
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    updatePool(
+      poolID: PromiseOrValue<BigNumberish>,
+      poolName: PromiseOrValue<string>,
+      entry_fee: PromiseOrValue<BigNumberish>,
+      protocolFee: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
   };
