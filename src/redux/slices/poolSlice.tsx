@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { useContractWrite, usePrepareContractWrite } from "wagmi";
+
 import { contractDetails } from "config";
-import { capMaxBetEndTime, extractMatchIds } from "utils/helpers";
 import {
   createPool,
   fetchPools,
@@ -12,7 +12,6 @@ import {
   poolUpdation,
   poolReplication,
 } from "utils/apiCalls";
-
 import {
   SLICE_NAMES,
   POOL_EDIT_POOL,
@@ -24,6 +23,7 @@ import {
   POOL_FETCH_MATCHES,
   POOL_CREATE_REPLICATE,
 } from "utils/constants";
+import { capMaxBetEndTime, extractMatchIds } from "utils/helpers";
 
 const initialState = {
   fee: "",

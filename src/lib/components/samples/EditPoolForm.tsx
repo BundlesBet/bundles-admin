@@ -7,17 +7,22 @@ import {
   useColorModeValue,
   useToast,
 } from "@chakra-ui/react";
+import { ethers } from "ethers";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  useAccount,
+  useBalance,
+  useContractWrite,
+  usePrepareContractWrite,
+} from "wagmi";
 import {
   readContract,
   writeContract,
   prepareWriteContract,
 } from "wagmi/actions";
-import { ethers } from "ethers";
+
 import { contractDetails } from "config";
-import { useAccount, useBalance } from "wagmi";
-import { useDispatch, useSelector } from "react-redux";
 import { editPool, handleChange } from "redux/slices/poolSlice";
-import { useContractWrite, usePrepareContractWrite } from "wagmi";
 import { UPDATE_POOL_CONTRACT_CALL } from "utils/constants";
 
 interface PoolEditProps {

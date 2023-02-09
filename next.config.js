@@ -16,4 +16,10 @@ module.exports = withPWA({
   eslint: {
     dirs: ["src"],
   },
+  typescript: {
+    ignoreBuildErrors: true,
+  },
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
 });

@@ -8,24 +8,29 @@ import {
   useToast,
   useColorModeValue,
 } from "@chakra-ui/react";
-import { useEffect } from "react";
 import { ethers } from "ethers";
-import { useAccount, useBalance } from "wagmi";
+import moment from "moment";
+import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import {
+  useAccount,
+  useBalance,
+  useContractWrite,
+  usePrepareContractWrite,
+} from "wagmi";
+import {
+  prepareWriteContract,
+  readContract,
+  writeContract,
+} from "wagmi/actions";
+
+import { contractDetails } from "config";
 import {
   handleChange,
   createNewPool,
   setBetEndTime,
   setContractMatchIds,
 } from "redux/slices/poolSlice";
-import moment from "moment";
-import {
-  prepareWriteContract,
-  readContract,
-  writeContract,
-} from "wagmi/actions";
-import { useContractWrite, usePrepareContractWrite } from "wagmi";
-import { contractDetails } from "config";
 import { ADD_POOL_CONTRACT_CALL } from "utils/constants";
 
 export const CreatePoolForm = () => {

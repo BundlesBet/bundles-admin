@@ -31,20 +31,23 @@ import {
   useBoolean,
   useToast,
 } from "@chakra-ui/react";
-import { contractDetails } from "config";
 import Pagination from "@choc-ui/paginator";
 import moment from "moment";
+import type React from "react";
+import { useEffect, useState, forwardRef, useCallback } from "react";
+import { BiCopy } from "react-icons/bi";
+import { BsFillTrashFill } from "react-icons/bs";
+import { FaEdit } from "react-icons/fa";
+import { useDispatch, useSelector } from "react-redux";
+import { useAccount, useContractWrite, usePrepareContractWrite } from "wagmi";
 import {
   readContract,
   writeContract,
   prepareWriteContract,
 } from "wagmi/actions";
-import { BiCopy } from "react-icons/bi";
-import { BsFillTrashFill } from "react-icons/bs";
-import { FaEdit } from "react-icons/fa";
-import { useDispatch, useSelector } from "react-redux";
+
 import { EditPoolModal } from "../modals/EditPool";
-import React, { useEffect, useState, forwardRef, useCallback } from "react";
+import { contractDetails } from "config";
 import { ReplicatePoolModal } from "lib/components/modals/ReplicatePoolModal";
 import {
   archivePool,
@@ -53,7 +56,6 @@ import {
   setArchivePoolId,
   setReplicatePoolId,
 } from "redux/slices/poolSlice";
-import { useAccount, useContractWrite, usePrepareContractWrite } from "wagmi";
 import { ARCHIVE_POOL_CONTRACT_CALL } from "utils/constants";
 
 const PoolTable = () => {

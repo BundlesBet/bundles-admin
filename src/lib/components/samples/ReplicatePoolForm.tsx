@@ -10,9 +10,7 @@ import {
 } from "@chakra-ui/react";
 import { ethers } from "ethers";
 import { useState, useEffect } from "react";
-import { contractDetails } from "config";
 import { useSelector, useDispatch } from "react-redux";
-import { ADD_POOL_CONTRACT_CALL } from "utils/constants";
 import { useAccount, useContractWrite, usePrepareContractWrite } from "wagmi";
 import {
   readContract,
@@ -20,11 +18,13 @@ import {
   prepareWriteContract,
 } from "wagmi/actions";
 
+import { contractDetails } from "config";
 import {
   handleChange,
   replicatePool,
   setContractMatchIds,
 } from "redux/slices/poolSlice";
+import { ADD_POOL_CONTRACT_CALL } from "utils/constants";
 
 export const ReplicatePoolForm = () => {
   const toast = useToast();
