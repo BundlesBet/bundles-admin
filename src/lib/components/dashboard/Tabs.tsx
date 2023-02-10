@@ -15,8 +15,8 @@ import {
   Heading,
 } from "@chakra-ui/react";
 import { useCallback, useEffect } from "react";
-import { useAccount } from "wagmi";
 import { useDispatch, useSelector } from "react-redux";
+import { useAccount } from "wagmi";
 
 import {
   handleChange,

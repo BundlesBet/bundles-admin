@@ -28,7 +28,7 @@ import { handleSelectChange } from "redux/slices/poolSlice";
 
 const CreatePoolTable = () => {
   const dispatch = useDispatch();
-  const header = ["", "Pool Name", "Match", "Date & Time"];
+  const header = ["", "League", "Match", "Date & Time"];
   const { sport, league, allMatches, selectedMatches } = useSelector(
     (store) => store.pools
   );
@@ -71,9 +71,7 @@ const CreatePoolTable = () => {
   };
 
   useEffect(() => {
-    console.log("running");
     setMatches(selectedMatches);
-    console.log(matches);
   }, [selectedMatches.length]);
 
   return (

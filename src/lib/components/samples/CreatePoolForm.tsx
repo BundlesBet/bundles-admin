@@ -8,25 +8,28 @@ import {
   useToast,
   useColorModeValue,
 } from "@chakra-ui/react";
-import { useEffect } from "react";
 import { ethers } from "ethers";
-import { useAccount, useBalance } from "wagmi";
+import { useEffect, useState } from "react";
+import { useAccount } from "wagmi";
+import CustomLoader from "./CustomLoader";
 import { useDispatch, useSelector } from "react-redux";
+import { contractDetails } from "config";
 import {
   handleChange,
   createNewPool,
   setBetEndTime,
   setContractMatchIds,
+  toggleCreatePoolLoading,
 } from "redux/slices/poolSlice";
-import moment from "moment";
+import {
+  ADD_POOL_CONTRACT_CALL,
+  ALL_MATCHES_CONTRACT_CALL,
+} from "utils/constants";
 import {
   prepareWriteContract,
   readContract,
   writeContract,
 } from "wagmi/actions";
-import { useContractWrite, usePrepareContractWrite } from "wagmi";
-import { contractDetails } from "config";
-import { ADD_POOL_CONTRACT_CALL } from "utils/constants";
 
 export const CreatePoolForm = () => {
   const dispatch = useDispatch();
@@ -44,7 +47,6 @@ export const CreatePoolForm = () => {
     betEndTime,
     contractMatchIds,
   } = useSelector((store) => store.pools);
-
   const toast = useToast();
 
   const onInputChange = (e: unknown) => {
@@ -59,6 +61,22 @@ export const CreatePoolForm = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedMatches.length]);
 
+  // const checkMatchOnContract = async () => {
+  //   try {
+  //     contractMatchIds.forEach(async (matchId: string) => {
+  //       const response = await readContract({
+  //         address: contractDetails.adminContract.address,
+  //         abi: contractDetails.adminContract.abi,
+  //         chainId: contractDetails.adminContract.chainId,
+  //         functionName: ALL_MATCHES_CONTRACT_CALL,
+  //         args: [matchId],
+  //       });
+  //     });
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+  // };
+
   const onCreatePool = async (e: unknown) => {
     e.preventDefault();
     try {
@@ -71,9 +89,12 @@ export const CreatePoolForm = () => {
           duration: 4000,
           isClosable: true,
         });
-        // close();
         return;
       }
+
+      dispatch(toggleCreatePoolLoading());
+
+      // checkMatchOnContract();
 
       const config = await prepareWriteContract({
         address: contractDetails.adminContract.address,
@@ -105,8 +126,6 @@ export const CreatePoolForm = () => {
         return;
       }
 
-      // (await writeAsync?.())?.wait(3).then((value) => {
-      // console.log(value);
       const payload = {
         sport,
         poolName,
@@ -118,8 +137,8 @@ export const CreatePoolForm = () => {
         rewardPercentage,
       };
       dispatch(createNewPool(payload));
-      // });
     } catch (err) {
+      dispatch(toggleCreatePoolLoading());
       console.log(err);
     }
   };
@@ -140,8 +159,9 @@ export const CreatePoolForm = () => {
           type="text"
           fontSize="md"
           name="poolName"
-          onChange={onInputChange}
           value={poolName}
+          onChange={onInputChange}
+          disabled={isCreatePoolLoading}
           placeholder="Enter your Pool Name"
           focusBorderColor={useColorModeValue("blue.500", "blue.200")}
         />
@@ -155,6 +175,7 @@ export const CreatePoolForm = () => {
           type="datetime-local"
           onChange={onInputChange}
           placeholder="Select Date"
+          disabled={isCreatePoolLoading}
           min={new Date().toISOString().slice(0, -8)}
         />
       </FormControl>
@@ -169,6 +190,7 @@ export const CreatePoolForm = () => {
           value={fee}
           placeholder="Enter Fee"
           onChange={onInputChange}
+          disabled={isCreatePoolLoading}
           focusBorderColor={useColorModeValue("blue.500", "blue.200")}
         />
       </FormControl>
@@ -182,6 +204,7 @@ export const CreatePoolForm = () => {
           value={protocolFee}
           onChange={onInputChange}
           placeholder="Enter Protocol Fee"
+          disabled={isCreatePoolLoading}
           focusBorderColor={useColorModeValue("blue.500", "blue.200")}
         />
       </FormControl>
@@ -192,6 +215,7 @@ export const CreatePoolForm = () => {
         onChange={onInputChange}
         placeholder="Select Pool Reward %"
         value={rewardPercentage}
+        disabled={isCreatePoolLoading}
         _selected={{ borderColor: "#00ffc2" }}
       >
         <option value="10">10%</option>
@@ -224,7 +248,7 @@ export const CreatePoolForm = () => {
           isCreatePoolLoading
         }
       >
-        Create Pool
+        {isCreatePoolLoading ? "Loading" : "Create Pool"}
       </Button>
     </Stack>
   );
