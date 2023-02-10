@@ -26,10 +26,12 @@ import type {
 export interface ContractInterface extends utils.Interface {
   functions: {
     "addPoolData(string,uint256,uint256,uint256,uint256,string[],uint256)": FunctionFragment;
+    "allMatches(string)": FunctionFragment;
     "archivePool(uint256)": FunctionFragment;
     "batchAddMatches(string[],string[],string[],string[])": FunctionFragment;
     "cancelBet(uint256)": FunctionFragment;
     "claimReward(uint256)": FunctionFragment;
+    "isAdmin(address)": FunctionFragment;
     "placeBets(uint256,string[],uint256[])": FunctionFragment;
     "updatePool(uint256,string,uint256,uint256)": FunctionFragment;
   };
@@ -37,10 +39,12 @@ export interface ContractInterface extends utils.Interface {
   getFunction(
     nameOrSignatureOrTopic:
       | "addPoolData"
+      | "allMatches"
       | "archivePool"
       | "batchAddMatches"
       | "cancelBet"
       | "claimReward"
+      | "isAdmin"
       | "placeBets"
       | "updatePool"
   ): FunctionFragment;
@@ -56,6 +60,10 @@ export interface ContractInterface extends utils.Interface {
       PromiseOrValue<string>[],
       PromiseOrValue<BigNumberish>
     ]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "allMatches",
+    values: [PromiseOrValue<string>]
   ): string;
   encodeFunctionData(
     functionFragment: "archivePool",
@@ -79,6 +87,10 @@ export interface ContractInterface extends utils.Interface {
     values: [PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
+    functionFragment: "isAdmin",
+    values: [PromiseOrValue<string>]
+  ): string;
+  encodeFunctionData(
     functionFragment: "placeBets",
     values: [
       PromiseOrValue<BigNumberish>,
@@ -100,6 +112,7 @@ export interface ContractInterface extends utils.Interface {
     functionFragment: "addPoolData",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "allMatches", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "archivePool",
     data: BytesLike
@@ -113,6 +126,7 @@ export interface ContractInterface extends utils.Interface {
     functionFragment: "claimReward",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "isAdmin", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "placeBets", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "updatePool", data: BytesLike): Result;
 
@@ -157,6 +171,19 @@ export interface Contract extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
+    allMatches(
+      arg0: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<
+      [string, string, string, string, string] & {
+        espn_id: string;
+        name: string;
+        teamA: string;
+        teamB: string;
+        winner: string;
+      }
+    >;
+
     archivePool(
       poolId: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -179,6 +206,11 @@ export interface Contract extends BaseContract {
       pool_id: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
+
+    isAdmin(
+      arg0: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<[boolean]>;
 
     placeBets(
       pool_id: PromiseOrValue<BigNumberish>,
@@ -207,6 +239,19 @@ export interface Contract extends BaseContract {
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
+  allMatches(
+    arg0: PromiseOrValue<string>,
+    overrides?: CallOverrides
+  ): Promise<
+    [string, string, string, string, string] & {
+      espn_id: string;
+      name: string;
+      teamA: string;
+      teamB: string;
+      winner: string;
+    }
+  >;
+
   archivePool(
     poolId: PromiseOrValue<BigNumberish>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -229,6 +274,11 @@ export interface Contract extends BaseContract {
     pool_id: PromiseOrValue<BigNumberish>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
+
+  isAdmin(
+    arg0: PromiseOrValue<string>,
+    overrides?: CallOverrides
+  ): Promise<boolean>;
 
   placeBets(
     pool_id: PromiseOrValue<BigNumberish>,
@@ -257,6 +307,19 @@ export interface Contract extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    allMatches(
+      arg0: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<
+      [string, string, string, string, string] & {
+        espn_id: string;
+        name: string;
+        teamA: string;
+        teamB: string;
+        winner: string;
+      }
+    >;
+
     archivePool(
       poolId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
@@ -279,6 +342,11 @@ export interface Contract extends BaseContract {
       pool_id: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<void>;
+
+    isAdmin(
+      arg0: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<boolean>;
 
     placeBets(
       pool_id: PromiseOrValue<BigNumberish>,
@@ -310,6 +378,11 @@ export interface Contract extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
+    allMatches(
+      arg0: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     archivePool(
       poolId: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -331,6 +404,11 @@ export interface Contract extends BaseContract {
     claimReward(
       pool_id: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    isAdmin(
+      arg0: PromiseOrValue<string>,
+      overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     placeBets(
@@ -361,6 +439,11 @@ export interface Contract extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
+    allMatches(
+      arg0: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     archivePool(
       poolId: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -382,6 +465,11 @@ export interface Contract extends BaseContract {
     claimReward(
       pool_id: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    isAdmin(
+      arg0: PromiseOrValue<string>,
+      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     placeBets(

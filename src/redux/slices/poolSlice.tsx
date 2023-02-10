@@ -1,7 +1,4 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { useContractWrite, usePrepareContractWrite } from "wagmi";
-
-import { contractDetails } from "config";
 import {
   createPool,
   fetchPools,
@@ -56,7 +53,7 @@ const initialState = {
         },
       },
       espnMatchId: 401492629,
-      startTime: 1676219940000,
+      startTime: 1676135727000,
       name: "AFC  at NFC ",
     },
     {
@@ -79,8 +76,8 @@ const initialState = {
         },
       },
       espnMatchId: 401437932,
-      startTime: 1676133540000,
-      name: "AFC  at NFC ",
+      startTime: 1676139327000,
+      name: "TEN at DAL",
     },
     {
       teams: {
@@ -102,8 +99,8 @@ const initialState = {
         },
       },
       espnMatchId: 401437938,
-      startTime: 1676306340000,
-      name: "AFC  at NFC ",
+      startTime: 1676132127000,
+      name: "NE at MIA",
     },
   ],
   protocolFee: "",
@@ -130,7 +127,6 @@ export const fetchAllPools = createAsyncThunk(
   POOL_FETCH_POOLS,
   async (_, thunkAPI) => {
     try {
-      console.log("fetchAllPools running");
       return await fetchPools();
     } catch (error) {
       console.log(error);
@@ -185,7 +181,7 @@ export const createNewPool = createAsyncThunk(
       // eslint-disable-next-line @typescript-eslint/no-use-before-define
       thunkAPI.dispatch(clearInputs());
       return response;
-    } catch {
+    } catch (error) {
       return thunkAPI.rejectWithValue(error.message);
     }
   }
@@ -199,7 +195,7 @@ export const replicatePool = createAsyncThunk(
       // eslint-disable-next-line @typescript-eslint/no-use-before-define
       thunkAPI.dispatch(clearInputs());
       return response;
-    } catch {
+    } catch (error) {
       return thunkAPI.rejectWithValue(error.message);
     }
   }
@@ -214,7 +210,7 @@ export const editPool = createAsyncThunk(
       // eslint-disable-next-line @typescript-eslint/no-use-before-define
       thunkAPI.dispatch(clearInputs());
       return response;
-    } catch {
+    } catch (error) {
       return thunkAPI.rejectWithValue(error.message);
     }
   }
@@ -225,9 +221,9 @@ export const archivePool = createAsyncThunk(
   async (poolId, thunkAPI) => {
     if (!poolId) return;
     try {
-      await poolArchive(poolId);
+      const response = await poolArchive(poolId);
       return response;
-    } catch {
+    } catch (error) {
       return thunkAPI.rejectWithValue(error.message);
     }
   }
@@ -312,13 +308,25 @@ const poolSlice = createSlice({
     setContractMatchIds: (state, payload) => {
       const { payload: selectedMatches } = payload;
       const selectedMatchIds = extractMatchIds(selectedMatches);
-      state.contractMatchIds = selectedMatchIds;
+      const response = (state.contractMatchIds = selectedMatchIds);
     },
     setArchivePoolId: (state, payload) => {
       const { payload: poolId } = payload;
       console.log(payload);
       console.log(poolId);
       state.archivePoolId = poolId;
+    },
+    toggleCreatePoolLoading: (state) => {
+      state.isCreatePoolLoading = !state.isCreatePoolLoading;
+    },
+    toggleEditPoolLoading: (state) => {
+      state.isEditPoolLoading = !state.isEditPoolLoading;
+    },
+    toggleArchivePoolLoading: (state) => {
+      state.isArchivePoolLoading = !state.isArchivePoolLoading;
+    },
+    toggleReplicatePoolLoading: (state) => {
+      state.isReplicatePoolLoading = !state.isReplicatePoolLoading;
     },
   },
   extraReducers: (builder) => {
@@ -331,6 +339,11 @@ const poolSlice = createSlice({
         const {
           payload: { poolsData },
         } = payload;
+        if (poolsData === null) {
+          state.allPools = [];
+          state.isLoading = false;
+          return;
+        }
         state.allPools = poolsData;
         state.isLoading = false;
       })
@@ -442,9 +455,11 @@ const poolSlice = createSlice({
         state.isArchivePoolLoading = true;
       })
       .addCase(archivePool.fulfilled, (state, payload) => {
-        state.allPools = state.allPools.filter(
-          (pool: any) => pool.id !== archivePoolId
+        const allPools = state.allPools.filter(
+          (pool: any) => pool.id !== state.archivePoolId
         );
+        console.log(allPools);
+        state.allPools = [...allPools];
         state.isArchivePoolLoading = false;
       })
       .addCase(archivePool.rejected, (state, payload) => {
@@ -463,6 +478,10 @@ export const {
   setArchivePoolId,
   setReplicatePoolId,
   handleSelectChange,
+  toggleEditPoolLoading,
+  toggleCreatePoolLoading,
+  toggleArchivePoolLoading,
+  toggleReplicatePoolLoading,
 } = poolSlice.actions;
 
 export default poolSlice.reducer;

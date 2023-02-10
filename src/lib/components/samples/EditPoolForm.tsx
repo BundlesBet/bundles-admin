@@ -8,13 +8,9 @@ import {
   useToast,
 } from "@chakra-ui/react";
 import { ethers } from "ethers";
+import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import {
-  useAccount,
-  useBalance,
-  useContractWrite,
-  usePrepareContractWrite,
-} from "wagmi";
+import { useAccount } from "wagmi";
 import {
   readContract,
   writeContract,
@@ -22,7 +18,11 @@ import {
 } from "wagmi/actions";
 
 import { contractDetails } from "config";
-import { editPool, handleChange } from "redux/slices/poolSlice";
+import {
+  editPool,
+  handleChange,
+  toggleEditPoolLoading,
+} from "redux/slices/poolSlice";
 import { UPDATE_POOL_CONTRACT_CALL } from "utils/constants";
 
 interface PoolEditProps {
@@ -30,8 +30,9 @@ interface PoolEditProps {
 }
 
 export const EditPoolForm = (props: PoolEditProps) => {
-  const dispatch = useDispatch();
+  const { close } = props;
   const toast = useToast();
+  const dispatch = useDispatch();
   const { address, isConnected } = useAccount();
 
   const { editPoolId, isEditPoolLoading, poolName, fee, protocolFee } =
@@ -55,9 +56,11 @@ export const EditPoolForm = (props: PoolEditProps) => {
           duration: 4000,
           isClosable: true,
         });
-        // close();
+
         return;
       }
+
+      dispatch(toggleEditPoolLoading());
       const config = await prepareWriteContract({
         address: contractDetails.adminContract.address,
         abi: contractDetails.adminContract.abi,
@@ -90,9 +93,8 @@ export const EditPoolForm = (props: PoolEditProps) => {
         protocolFee: parseInt(protocolFee),
       };
       dispatch(editPool({ poolId: editPoolId, poolDetails: payload }));
-      // });
-      // close();
     } catch (error) {
+      dispatch(toggleEditPoolLoading());
       console.log(error);
     }
   };
@@ -116,6 +118,7 @@ export const EditPoolForm = (props: PoolEditProps) => {
           fontSize="md"
           value={poolName}
           onChange={onInputChange}
+          disabled={isEditPoolLoading}
           focusBorderColor={useColorModeValue("blue.500", "blue.200")}
         />
       </FormControl>
@@ -129,6 +132,7 @@ export const EditPoolForm = (props: PoolEditProps) => {
           name="fee"
           value={fee}
           onChange={onInputChange}
+          disabled={isEditPoolLoading}
           focusBorderColor={useColorModeValue("blue.500", "blue.200")}
         />
       </FormControl>
@@ -142,6 +146,7 @@ export const EditPoolForm = (props: PoolEditProps) => {
           name="protocolFee"
           value={protocolFee}
           onChange={onInputChange}
+          disabled={isEditPoolLoading}
           focusBorderColor={useColorModeValue("blue.500", "blue.200")}
         />
       </FormControl>
@@ -168,7 +173,7 @@ export const EditPoolForm = (props: PoolEditProps) => {
         }
         onClick={(e) => onEditPool(e)}
       >
-        Edit Pool
+        {isEditPoolLoading ? "Loading" : "Edit Pool"}
       </Button>
     </Stack>
   );

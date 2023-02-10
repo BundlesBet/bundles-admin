@@ -28,33 +28,28 @@ import {
   PopoverCloseButton,
   PopoverBody,
   PopoverFooter,
-  useBoolean,
   useToast,
 } from "@chakra-ui/react";
 import Pagination from "@choc-ui/paginator";
 import moment from "moment";
 import type React from "react";
-import { useEffect, useState, forwardRef, useCallback } from "react";
+import { useState, forwardRef } from "react";
 import { BiCopy } from "react-icons/bi";
 import { BsFillTrashFill } from "react-icons/bs";
 import { FaEdit } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
-import { useAccount, useContractWrite, usePrepareContractWrite } from "wagmi";
-import {
-  readContract,
-  writeContract,
-  prepareWriteContract,
-} from "wagmi/actions";
+import { useAccount } from "wagmi";
+import { writeContract, prepareWriteContract } from "wagmi/actions";
 
 import { EditPoolModal } from "../modals/EditPool";
 import { contractDetails } from "config";
 import { ReplicatePoolModal } from "lib/components/modals/ReplicatePoolModal";
 import {
   archivePool,
-  fetchAllPools,
   handleEditPool,
   setArchivePoolId,
   setReplicatePoolId,
+  toggleArchivePoolLoading,
 } from "redux/slices/poolSlice";
 import { ARCHIVE_POOL_CONTRACT_CALL } from "utils/constants";
 
@@ -71,10 +66,10 @@ const PoolTable = () => {
   } = useSelector((store: any) => store.pools);
   const header = [
     "Pool Id",
-    "Pool League",
-    "Pool Name",
-    "Pool Start Time",
-    "Pool Fee",
+    "League",
+    "Name",
+    "Start Time",
+    "Fee",
     "Protocol Fee",
     "Reward %",
     "",
@@ -84,20 +79,6 @@ const PoolTable = () => {
   const offset = (current - 1) * pageSize;
   const pools =
     allPools?.length === 0 ? [] : allPools?.slice(offset, offset + pageSize);
-
-  // const fetchPoolsData = useCallback(async () => {
-  //   try {
-  //     dispatch(fetchAllPools());
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  // }, []);
-
-  // useEffect(() => {
-  //   if (allPools.length > 0) return;
-  //   fetchPoolsData();
-  //   // eslint-disable-next-line react-hooks/exhaustive-deps
-  // }, [fetchPoolsData]);
 
   const Prev = forwardRef((props, ref: any) => {
     return (
@@ -123,18 +104,16 @@ const PoolTable = () => {
     }
   };
 
-  const { isOpen, onOpen, onClose } = useDisclosure();
-  const { on, off, toggle } = useBoolean();
-
-  // const { config } = usePrepareContractWrite({
-  //   address: contractDetails.adminContract.address,
-  //   abi: contractDetails.adminContract.abi,
-  //   chainId: contractDetails.adminContract.chainId,
-  //   functionName: ARCHIVE_POOL_CONTRACT_CALL,
-  //   args: [archivePoolId],
-  // });
-
-  // const { writeAsync } = useContractWrite(config);
+  const {
+    isOpen: isEditPoolOpen,
+    onOpen: onEditPoolOpen,
+    onClose: onEditPoolClose,
+  } = useDisclosure();
+  const {
+    isOpen: isReplicatePoolOpen,
+    onOpen: onReplicatePoolOpen,
+    onClose: onReplicatePoolClose,
+  } = useDisclosure();
 
   const onPoolArchive = async () => {
     try {
@@ -147,10 +126,9 @@ const PoolTable = () => {
           duration: 4000,
           isClosable: true,
         });
-        // close();
         return;
       }
-
+      dispatch(toggleArchivePoolLoading());
       const config = await prepareWriteContract({
         address: contractDetails.adminContract.address,
         abi: contractDetails.adminContract.abi,
@@ -172,17 +150,13 @@ const PoolTable = () => {
         });
         return;
       }
-
-      // (await writeAsync?.())?.wait(3).then((value) => {
-      //   console.log(value);
       dispatch(archivePool(archivePoolId));
-      // });
     } catch (err) {
+      dispatch(toggleArchivePoolLoading());
       console.log(err);
     }
   };
 
-  console.log(allPools);
   if (!allPools.length) {
     return (
       <Alert status="warning">
@@ -369,7 +343,7 @@ const PoolTable = () => {
                                 colorScheme="blue"
                                 icon={<FaEdit />}
                                 aria-label="Up"
-                                isDisabled={
+                                disabled={
                                   isEditPoolLoading ||
                                   isArchivePoolLoading ||
                                   isReplicatePoolLoading
@@ -381,7 +355,7 @@ const PoolTable = () => {
                                       poolId: pool.id,
                                     })
                                   );
-                                  onOpen();
+                                  onEditPoolOpen();
                                 }}
                               />
                             </Tooltip>
@@ -429,6 +403,7 @@ const PoolTable = () => {
                                       <Button
                                         variant="outline"
                                         as={PopoverCloseButton}
+                                        disabled={isArchivePoolLoading}
                                       >
                                         Cancel
                                       </Button>
@@ -436,6 +411,7 @@ const PoolTable = () => {
                                         bg="#0EB634"
                                         color="#111"
                                         onClick={onPoolArchive}
+                                        disabled={isArchivePoolLoading}
                                       >
                                         Archive
                                       </Button>
@@ -465,7 +441,7 @@ const PoolTable = () => {
                                   dispatch(
                                     setReplicatePoolId({ poolId: pool.id })
                                   );
-                                  onOpen();
+                                  onReplicatePoolOpen();
                                 }}
                               />
                             </Tooltip>
@@ -478,8 +454,11 @@ const PoolTable = () => {
           </Tbody>
         </Table>
       </TableContainer>
-      <EditPoolModal isOpen={isOpen} close={onClose} />
-      {/* <ReplicatePoolModal isOpen={isOpen} close={onClose} /> */}
+      <EditPoolModal isOpen={isEditPoolOpen} close={onEditPoolClose} />
+      <ReplicatePoolModal
+        isOpen={isReplicatePoolOpen}
+        close={onReplicatePoolClose}
+      />
     </Flex>
   );
 };

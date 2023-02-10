@@ -18,3 +18,4 @@ export const ADD_POOL_CONTRACT_CALL =
 export const ARCHIVE_POOL_CONTRACT_CALL = "archivePool(uint256)";
 export const UPDATE_POOL_CONTRACT_CALL =
   "updatePool(uint256,string,uint256,uint256)";
+export const ALL_MATCHES_CONTRACT_CALL = "allMatches(string)";

@@ -11,18 +11,15 @@ import {
 import { ethers } from "ethers";
 import { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { useAccount, useContractWrite, usePrepareContractWrite } from "wagmi";
-import {
-  readContract,
-  writeContract,
-  prepareWriteContract,
-} from "wagmi/actions";
+import { useAccount } from "wagmi";
+import { writeContract, prepareWriteContract } from "wagmi/actions";
 
 import { contractDetails } from "config";
 import {
   handleChange,
   replicatePool,
   setContractMatchIds,
+  toggleReplicatePoolLoading,
 } from "redux/slices/poolSlice";
 import { ADD_POOL_CONTRACT_CALL } from "utils/constants";
 
@@ -51,29 +48,6 @@ export const ReplicatePoolForm = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [poolToBeReplicated.id]);
 
-  console.log(poolToBeReplicated.startTime);
-  console.log(typeof new Date(poolToBeReplicated.startTime).getTime());
-  console.log(new Date(poolToBeReplicated.startTime).getTime() / 1000);
-
-  // const { config } = usePrepareContractWrite({
-  //   address: contractDetails.adminContract.address,
-  //   abi: contractDetails.adminContract.abi,
-  //   chainId: contractDetails.adminContract.chainId,
-  //   functionName: ADD_POOL_CONTRACT_CALL,
-  //   args: [
-  //     poolName,
-  //     ethers.utils.parseUnits(fee, "ether"),
-  //     ethers.utils.parseUnits(protocolFee, "ether"),
-  //     new Date(poolToBeReplicated.startTime).getTime(),
-  //     new Date(poolToBeReplicated.betEndTime).getTime(),
-  //     contractMatchIds,
-  //     1000,
-  //   ],
-  //   enabled: true,
-  // });
-
-  // const { writeAsync } = useContractWrite(config);
-
   const onReplicatePool = async (e: unknown) => {
     e.preventDefault();
     try {
@@ -90,6 +64,8 @@ export const ReplicatePoolForm = () => {
         return;
       }
 
+      dispatch(toggleReplicatePoolLoading());
+
       const config = await prepareWriteContract({
         address: contractDetails.adminContract.address,
         abi: contractDetails.adminContract.abi,
@@ -104,7 +80,6 @@ export const ReplicatePoolForm = () => {
           contractMatchIds,
           1000,
         ],
-        enabled: true,
       });
 
       const response = await (await writeContract(config)).wait(1);
@@ -134,6 +109,7 @@ export const ReplicatePoolForm = () => {
       // onReplicatePool(e);
       // });
     } catch (err) {
+      dispatch(toggleReplicatePoolLoading());
       console.log(err);
     }
   };
@@ -228,7 +204,7 @@ export const ReplicatePoolForm = () => {
         }
         onClick={(e) => onReplicatePool(e)}
       >
-        Replicate Pool
+        {isReplicatePoolLoading ? "Loading" : "Replicate Pool"}
       </Button>
     </Stack>
   );
