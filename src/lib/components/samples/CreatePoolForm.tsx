@@ -10,16 +10,8 @@ import {
 } from "@chakra-ui/react";
 import { ethers } from "ethers";
 import { useEffect, useState } from "react";
-import { useAccount } from "wagmi";
-import CustomLoader from "./CustomLoader";
 import { useDispatch, useSelector } from "react-redux";
-import { contractDetails } from "config";
-import {
-  useAccount,
-  useBalance,
-  useContractWrite,
-  usePrepareContractWrite,
-} from "wagmi";
+import { useAccount } from "wagmi";
 import {
   prepareWriteContract,
   readContract,
@@ -38,11 +30,8 @@ import {
   ADD_POOL_CONTRACT_CALL,
   ALL_MATCHES_CONTRACT_CALL,
 } from "utils/constants";
-import {
-  prepareWriteContract,
-  readContract,
-  writeContract,
-} from "wagmi/actions";
+
+import CustomLoader from "./CustomLoader";
 
 export const CreatePoolForm = () => {
   const dispatch = useDispatch();

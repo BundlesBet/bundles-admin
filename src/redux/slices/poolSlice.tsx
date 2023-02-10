@@ -1,4 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+
 import {
   createPool,
   fetchPools,
@@ -221,8 +222,7 @@ export const archivePool = createAsyncThunk(
   async (poolId, thunkAPI) => {
     if (!poolId) return;
     try {
-      const response = await poolArchive(poolId);
-      return response;
+      return await poolArchive(poolId);
     } catch (error) {
       return thunkAPI.rejectWithValue(error.message);
     }
