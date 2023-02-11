@@ -1,9 +1,18 @@
 import { Flex, Grid, Heading, Highlight } from "@chakra-ui/react";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
+import { useEffect } from "react";
+import { useAccount } from "wagmi";
 
 import HelperImage from "./HelperImage";
 
 const SomeText = () => {
+  const { address, isConnected } = useAccount();
+
+  useEffect(() => {
+    if (!address || isConnected === false) return;
+    // add admin check here
+  }, [address, isConnected]);
+
   return (
     <Grid textAlign="center">
       <Flex
