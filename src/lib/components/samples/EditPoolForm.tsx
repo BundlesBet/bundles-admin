@@ -19,6 +19,7 @@ import {
 
 import { contractDetails } from "config";
 import {
+  clearInputs,
   editPool,
   handleChange,
   toggleEditPoolLoading,
@@ -35,13 +36,31 @@ export const EditPoolForm = (props: PoolEditProps) => {
   const dispatch = useDispatch();
   const { address, isConnected } = useAccount();
 
-  const { editPoolId, isEditPoolLoading, poolName, fee, protocolFee } =
+  const { poolToBeEdited, isEditPoolLoading, poolName, fee, protocolFee } =
     useSelector((store) => store.pools);
 
   const onInputChange = (e: unknown) => {
     const { name, value } = e.target;
     dispatch(handleChange({ name, value }));
   };
+
+  useEffect(() => {
+    if (protocolFee || fee || poolName) return;
+    return () => dispatch(clearInputs());
+  }, []);
+
+  useEffect(() => {
+    if (parseInt(fee) < 1) {
+      toast({
+        position: "top-right",
+        title: "Fee cannot be less than 1 BUND",
+        description: `Incorrect Pool Fee ${fee}`,
+        status: "error",
+        isClosable: true,
+      });
+    }
+    return () => {};
+  }, [fee]);
 
   const onEditPool = async (e: unknown) => {
     e.preventDefault();
@@ -67,7 +86,7 @@ export const EditPoolForm = (props: PoolEditProps) => {
         chainId: contractDetails.adminContract.chainId,
         functionName: UPDATE_POOL_CONTRACT_CALL,
         args: [
-          editPoolId,
+          poolToBeEdited.id,
           poolName,
           ethers.utils.parseUnits(fee.toString(), "ether"),
           ethers.utils.parseUnits(protocolFee.toString(), "ether"),
@@ -92,7 +111,7 @@ export const EditPoolForm = (props: PoolEditProps) => {
         fee: parseInt(fee),
         protocolFee: parseInt(protocolFee),
       };
-      dispatch(editPool({ poolId: editPoolId, poolDetails: payload }));
+      dispatch(editPool({ poolId: poolToBeEdited.id, poolDetails: payload }));
     } catch (error) {
       dispatch(toggleEditPoolLoading());
       console.log(error);
@@ -166,6 +185,7 @@ export const EditPoolForm = (props: PoolEditProps) => {
         disabled={
           !fee ||
           !address ||
+          parseInt(fee) < 1 ||
           !poolName ||
           !isConnected ||
           !protocolFee ||

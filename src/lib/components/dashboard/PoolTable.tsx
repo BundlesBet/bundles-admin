@@ -29,6 +29,13 @@ import {
   PopoverBody,
   PopoverFooter,
   useToast,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalBody,
+  Stack,
+  Heading,
+  Text,
 } from "@chakra-ui/react";
 import Pagination from "@choc-ui/paginator";
 import moment from "moment";
@@ -60,6 +67,7 @@ const PoolTable = () => {
   const {
     allPools,
     archivePoolId,
+    poolToBeArchived,
     isEditPoolLoading,
     isArchivePoolLoading,
     isReplicatePoolLoading,
@@ -72,6 +80,7 @@ const PoolTable = () => {
     "Fee",
     "Protocol Fee",
     "Reward %",
+    "Bets Placed",
     "",
   ];
   const [current, setCurrent] = useState(1);
@@ -305,31 +314,37 @@ const PoolTable = () => {
                         | React.ReactPortal
                         | null
                         | undefined;
+                      participants: string[];
                     },
                     index: React.Key | null | undefined
                   ) => {
                     return (
                       <Tr key={index}>
                         <Td color="#fff" fontSize="md" fontWeight="hairline">
-                          {pool.id}
+                          {pool?.id}
                         </Td>
                         <Td color="#fff" fontSize="md" fontWeight="hairline">
-                          {pool.leagueName}
+                          {pool?.leagueName}
                         </Td>
                         <Td color="#fff" fontSize="md" fontWeight="hairline">
-                          {pool.poolName}
+                          {pool?.poolName}
                         </Td>
                         <Td color="#fff" fontSize="md" fontWeight="hairline">
-                          {moment(pool.startTime).format("MM-DD-YYYY hh:mm A")}
+                          {moment(pool?.startTime).format("MM-DD-YYYY hh:mm A")}
                         </Td>
                         <Td color="#fff" fontSize="md" fontWeight="hairline">
-                          {pool.fee}
+                          {pool?.fee}
                         </Td>
                         <Td color="#fff" fontSize="md" fontWeight="hairline">
-                          {pool.protocolFee}
+                          {pool?.protocolFee}
                         </Td>
                         <Td color="#fff" fontSize="md" fontWeight="hairline">
-                          {pool.rewardPercentage}
+                          {pool?.rewardPercentage}
+                        </Td>
+                        <Td color="#fff" fontSize="md" fontWeight="hairline">
+                          {pool?.participants?.length
+                            ? pool?.participants?.length
+                            : 0}
                         </Td>
                         <Td color="#fff" fontSize="md" fontWeight="hairline">
                           <ButtonGroup variant="solid" size="sm" spacing={3}>
@@ -381,43 +396,88 @@ const PoolTable = () => {
                                     }
                                   />
                                 </PopoverTrigger>
-                                <PopoverContent
-                                  color="white"
-                                  bg="#1C1C26"
-                                  borderColor="blue.800"
-                                  borderRadius="2xl"
-                                >
-                                  <PopoverHeader fontWeight="semibold">
-                                    Confirmation
-                                  </PopoverHeader>
-                                  <PopoverArrow />
-                                  <PopoverCloseButton />
-                                  <PopoverBody>
-                                    Are you sure you want to archive this pool?
-                                  </PopoverBody>
-                                  <PopoverFooter
-                                    display="flex"
-                                    justifyContent="flex-end"
+                                {archivePoolId &&
+                                poolToBeArchived.participants.length ? (
+                                  <Modal
+                                    isOpen={isOpen}
+                                    onClose={() => close()}
+                                    size="xl"
+                                    isCentered
+                                    // `trapFocus` and `blockScrollOnMount` are only switched off so that the preview works properly.
+                                    blockScrollOnMount={false}
+                                    trapFocus={false}
                                   >
-                                    <ButtonGroup size="sm">
-                                      <Button
-                                        variant="outline"
-                                        as={PopoverCloseButton}
-                                        disabled={isArchivePoolLoading}
-                                      >
-                                        Cancel
-                                      </Button>
-                                      <Button
-                                        bg="#0EB634"
-                                        color="#111"
-                                        onClick={onPoolArchive}
-                                        disabled={isArchivePoolLoading}
-                                      >
-                                        Archive
-                                      </Button>
-                                    </ButtonGroup>
-                                  </PopoverFooter>
-                                </PopoverContent>
+                                    <ModalOverlay />
+                                    <ModalContent
+                                      borderRadius="2xl"
+                                      mx="4"
+                                      bg="#1C1C26"
+                                    >
+                                      <ModalBody>
+                                        <Stack
+                                          maxW="xs"
+                                          mx="auto"
+                                          py={{ base: "12", md: "16" }}
+                                          spacing={{ base: "6", md: "10" }}
+                                        >
+                                          <Stack spacing="3" textAlign="center">
+                                            <Heading as="h2" size="xl">
+                                              Action Not Allowed
+                                            </Heading>
+                                          </Stack>
+                                          <Text fontSize="xl">
+                                            {poolToBeArchived.poolName} has{" "}
+                                            {
+                                              poolToBeArchived.participants
+                                                .length
+                                            }
+                                            bets placed on it and it cannot be
+                                            archived
+                                          </Text>
+                                        </Stack>
+                                      </ModalBody>
+                                    </ModalContent>
+                                  </Modal>
+                                ) : (
+                                  <PopoverContent
+                                    color="white"
+                                    bg="#1C1C26"
+                                    borderColor="blue.800"
+                                    borderRadius="2xl"
+                                  >
+                                    <PopoverHeader fontWeight="semibold">
+                                      Confirmation
+                                    </PopoverHeader>
+                                    <PopoverArrow />
+                                    <PopoverCloseButton />
+                                    <PopoverBody>
+                                      Are you sure you want to archive this
+                                      pool?
+                                    </PopoverBody>
+                                    <PopoverFooter
+                                      display="flex"
+                                      justifyContent="flex-end"
+                                    >
+                                      <ButtonGroup size="sm">
+                                        <Button
+                                          variant="outline"
+                                          as={PopoverCloseButton}
+                                          disabled={isArchivePoolLoading}
+                                        >
+                                          Cancel
+                                        </Button>
+                                        <Button
+                                          bg="#0EB634"
+                                          color="#111"
+                                          onClick={onPoolArchive}
+                                          disabled={isArchivePoolLoading}
+                                        >
+                                          Archive
+                                        </Button>
+                                      </ButtonGroup>
+                                    </PopoverFooter>
+                                  </PopoverContent>
+                                )}
                               </Popover>
                             </Tooltip>
                             <Tooltip

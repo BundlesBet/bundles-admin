@@ -20,6 +20,7 @@ import {
 
 import { contractDetails } from "config";
 import {
+  clearInputs,
   handleChange,
   createNewPool,
   setBetEndTime,
@@ -78,6 +79,22 @@ export const CreatePoolForm = () => {
   //     console.log(error);
   //   }
   // };
+  useEffect(() => {
+    if (parseInt(fee) < 1) {
+      toast({
+        position: "top-right",
+        title: "Fee cannot be less than 1 BUND",
+        description: `Incorrect Pool Fee ${fee}`,
+        status: "error",
+        isClosable: true,
+      });
+    }
+    return () => {};
+  }, [fee]);
+
+  useEffect(() => {
+    return () => dispatch(clearInputs());
+  }, []);
 
   const onCreatePool = async (e: unknown) => {
     e.preventDefault();
@@ -123,7 +140,7 @@ export const CreatePoolForm = () => {
           description: "Some error occured.",
           status: "error",
           duration: 4000,
-          isClosable: true,
+          isClosable: false,
         });
         return;
       }
@@ -240,6 +257,7 @@ export const CreatePoolForm = () => {
         onClick={(e) => onCreatePool(e)}
         disabled={
           !fee ||
+          parseInt(fee) < 1 ||
           !address ||
           !poolName ||
           !startTime ||

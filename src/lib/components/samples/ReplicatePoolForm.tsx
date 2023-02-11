@@ -16,6 +16,7 @@ import { writeContract, prepareWriteContract } from "wagmi/actions";
 
 import { contractDetails } from "config";
 import {
+  clearInputs,
   handleChange,
   replicatePool,
   setContractMatchIds,
@@ -47,6 +48,23 @@ export const ReplicatePoolForm = () => {
     dispatch(setContractMatchIds(poolToBeReplicated.matches));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [poolToBeReplicated.id]);
+
+  useEffect(() => {
+    return () => dispatch(clearInputs());
+  }, []);
+
+  useEffect(() => {
+    if (parseInt(fee) < 1) {
+      toast({
+        position: "top-right",
+        title: "Fee cannot be less than 1 BUND",
+        description: `Incorrect Pool Fee ${fee}`,
+        status: "error",
+        isClosable: true,
+      });
+    }
+    return () => {};
+  }, [fee]);
 
   const onReplicatePool = async (e: unknown) => {
     e.preventDefault();
@@ -195,12 +213,14 @@ export const ReplicatePoolForm = () => {
         size="lg"
         isDisabled={
           !fee ||
+          parseInt(fee) < 1 ||
           !address ||
           !poolName ||
           !isConnected ||
           !protocolFee ||
           !rewardPercentage ||
-          isReplicatePoolLoading
+          isReplicatePoolLoading ||
+          new Date(poolToBeReplicated?.startTime).getTime() < Date.now()
         }
         onClick={(e) => onReplicatePool(e)}
       >

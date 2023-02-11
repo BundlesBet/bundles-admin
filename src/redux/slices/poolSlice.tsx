@@ -30,7 +30,6 @@ const initialState = {
   sports: [],
   leagues: [],
   poolName: "",
-  editPoolId: null,
   totalPools: 0,
   isError: false,
   allMatches: [
@@ -114,6 +113,8 @@ const initialState = {
   contractMatchIds: [],
   startTime: new Date(),
   poolToBeReplicated: {},
+  poolToBeEdited: {},
+  poolToBeArchived: {},
   isEditPoolLoading: false,
   isAllSportsLoading: false,
   isAllLeaguesLoading: false,
@@ -239,6 +240,9 @@ const poolSlice = createSlice({
       if (name === "startTime") {
         value = new Date(value);
       }
+      if ((name === "fee" || name === "protocolFee") && value < 0) {
+        value = 0;
+      }
       state[name] = value;
     },
     handleSelectChange: (state, payload) => {
@@ -271,8 +275,6 @@ const poolSlice = createSlice({
         fee: "",
         poolName: "",
         protocolFee: "",
-        replicatePoolId: "",
-        selectedMatches: [],
         rewardPercentage: "",
         startTime: new Date(),
       };
@@ -281,12 +283,11 @@ const poolSlice = createSlice({
       const {
         payload: { allPools, poolId },
       } = payload;
-      console.log(payload);
       if (!poolId || !allPools.length) return;
       const poolToBeEdited = allPools.find((pool: any) => {
         return parseInt(pool.id) === parseInt(poolId);
       });
-      state.editPoolId = poolToBeEdited.id;
+      state.poolToBeEdited = poolToBeEdited;
       state.poolName = poolToBeEdited.poolName;
       state.fee = poolToBeEdited.fee;
       state.protocolFee = poolToBeEdited.protocolFee;
@@ -312,9 +313,11 @@ const poolSlice = createSlice({
     },
     setArchivePoolId: (state, payload) => {
       const { payload: poolId } = payload;
-      console.log(payload);
-      console.log(poolId);
+      const poolToBeArchived = state.allPools.find((pool: any) => {
+        return parseInt(pool.id) === parseInt(poolId);
+      });
       state.archivePoolId = poolId;
+      state.poolToBeArchived = poolToBeArchived;
     },
     toggleCreatePoolLoading: (state) => {
       state.isCreatePoolLoading = !state.isCreatePoolLoading;
@@ -348,7 +351,7 @@ const poolSlice = createSlice({
         state.isLoading = false;
       })
       .addCase(fetchAllPools.rejected, (state, payload) => {
-        console.log(payload);
+        state.allPools = [];
         state.isLoading = false;
       })
       // ** All the sports are being fetched below ** //
@@ -365,7 +368,7 @@ const poolSlice = createSlice({
         state.isAllSportsLoading = false;
       })
       .addCase(fetchAllSports.rejected, (state, payload) => {
-        console.log(payload);
+        state.sports = [];
         state.isAllSportsLoading = false;
       })
       // ** All the leagues are being fetched below ** //
@@ -384,7 +387,7 @@ const poolSlice = createSlice({
         state.isAllLeaguesLoading = false;
       })
       .addCase(fetchAllLeagues.rejected, (state, payload) => {
-        console.log(payload);
+        state.leagues = [];
         state.isAllLeaguesLoading = false;
       })
       // ** All the matches belonging to the current sport and league in the state are being fetched below ** //
@@ -399,7 +402,7 @@ const poolSlice = createSlice({
         state.isAllMatchesLoading = false;
       })
       .addCase(fetchAllMatches.rejected, (state, payload) => {
-        console.log(payload);
+        state.allMatches = [];
         state.isAllMatchesLoading = false;
       })
       // ** Create New Pool handlers are listed below ** //
@@ -412,10 +415,12 @@ const poolSlice = createSlice({
         } = payload;
         state.allPools = [...state.allPools, createdPool];
         state.isCreatePoolLoading = false;
+        state.selectedMatches = [];
       })
       .addCase(createNewPool.rejected, (state, payload) => {
-        console.log(payload);
+        state.allPools = state.allPools;
         state.isCreatePoolLoading = false;
+        state.selectedMatches = [];
       })
       // ** Edit Existing Pool handlers are listed below ** //
       .addCase(editPool.pending, (state) => {
@@ -428,11 +433,13 @@ const poolSlice = createSlice({
         const allPools = state.allPools.filter(
           (pool: any) => pool.id !== updatedPool.id
         );
+        state.poolToBeEdited = {};
         state.allPools = [...allPools, updatedPool];
         state.isEditPoolLoading = false;
       })
       .addCase(editPool.rejected, (state, payload) => {
-        console.log(payload);
+        state.allPools = state.allPools;
+        state.poolToBeEdited = {};
         state.isEditPoolLoading = false;
       })
       // ** Replicate Pool handlers are listed below ** //
@@ -441,13 +448,19 @@ const poolSlice = createSlice({
       })
       .addCase(replicatePool.fulfilled, (state, payload) => {
         const {
-          payload: { replicatedPool },
+          payload: { error, replicatedPool },
         } = payload;
+        if (error === false && typeof replicatedPool === "string") {
+          state.allPools = state.allPools;
+          state.isReplicatePoolLoading = false;
+          return;
+        }
+        state.poolToBeReplicated = {};
         state.allPools = [...state.allPools, replicatedPool];
         state.isReplicatePoolLoading = false;
       })
       .addCase(replicatePool.rejected, (state, payload) => {
-        console.log(payload);
+        state.allPools = state.allPools;
         state.isReplicatePoolLoading = false;
       })
       // ** Archive Pool handlers are listed below ** //
@@ -458,13 +471,16 @@ const poolSlice = createSlice({
         const allPools = state.allPools.filter(
           (pool: any) => pool.id !== state.archivePoolId
         );
-        console.log(allPools);
         state.allPools = [...allPools];
         state.isArchivePoolLoading = false;
+        state.archivePoolId = null;
+        state.poolToBeArchived = {};
       })
       .addCase(archivePool.rejected, (state, payload) => {
-        console.log(payload);
+        state.allPools = state.allPools;
         state.isArchivePoolLoading = false;
+        state.poolToBeArchived = {};
+        state.archivePoolId = null;
       });
   },
 });
