@@ -24,14 +24,14 @@ import {
   handleChange,
   createNewPool,
   setBetEndTime,
-  setContractMatchIds,
+  setContractMatchData,
   toggleCreatePoolLoading,
 } from "redux/slices/poolSlice";
 import {
   ADD_POOL_CONTRACT_CALL,
-  ALL_MATCHES_CONTRACT_CALL,
+  BATCH_ADD_MATCHES_CONTRACT_CALL,
 } from "utils/constants";
-
+import BN from "bn.js";
 import CustomLoader from "./CustomLoader";
 
 export const CreatePoolForm = () => {
@@ -48,7 +48,10 @@ export const CreatePoolForm = () => {
     selectedMatches,
     isCreatePoolLoading,
     betEndTime,
+    contractTeamAs,
+    contractTeamBs,
     contractMatchIds,
+    contractMatchNames,
   } = useSelector((store) => store.pools);
   const toast = useToast();
 
@@ -60,25 +63,10 @@ export const CreatePoolForm = () => {
   useEffect(() => {
     if (!selectedMatches.length) return;
     dispatch(setBetEndTime(selectedMatches));
-    dispatch(setContractMatchIds(selectedMatches));
+    dispatch(setContractMatchData(selectedMatches));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedMatches.length]);
 
-  // const checkMatchOnContract = async () => {
-  //   try {
-  //     contractMatchIds.forEach(async (matchId: string) => {
-  //       const response = await readContract({
-  //         address: contractDetails.adminContract.address,
-  //         abi: contractDetails.adminContract.abi,
-  //         chainId: contractDetails.adminContract.chainId,
-  //         functionName: ALL_MATCHES_CONTRACT_CALL,
-  //         args: [matchId],
-  //       });
-  //     });
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  // };
   useEffect(() => {
     if (parseInt(fee) < 1) {
       toast({
@@ -113,9 +101,37 @@ export const CreatePoolForm = () => {
 
       dispatch(toggleCreatePoolLoading());
 
-      // checkMatchOnContract();
+      const batchAddMatchesConfig = await prepareWriteContract({
+        address: contractDetails.adminContract.address,
+        abi: contractDetails.adminContract.abi,
+        chainId: contractDetails.adminContract.chainId,
+        functionName: BATCH_ADD_MATCHES_CONTRACT_CALL,
+        args: [
+          contractMatchIds,
+          contractMatchNames,
+          contractTeamAs,
+          contractTeamBs,
+        ],
+        // overrides: { gasLimit: new BN("100000000") as any },
+      });
 
-      const config = await prepareWriteContract({
+      const batchAddMatchesResponse = await (
+        await writeContract(batchAddMatchesConfig)
+      ).wait(1);
+
+      if (!batchAddMatchesResponse) {
+        toast({
+          position: "top-right",
+          title: "Transaction Failed",
+          description: "Some error occured.",
+          status: "error",
+          duration: 4000,
+          isClosable: false,
+        });
+        return;
+      }
+
+      const addPoolConfig = await prepareWriteContract({
         address: contractDetails.adminContract.address,
         abi: contractDetails.adminContract.abi,
         chainId: contractDetails.adminContract.chainId,
@@ -128,12 +144,15 @@ export const CreatePoolForm = () => {
           betEndTime,
           contractMatchIds,
           1000,
+          parseInt(rewardPercentage),
         ],
       });
 
-      const response = await (await writeContract(config)).wait(1);
+      const addPoolResponse = await (
+        await writeContract(addPoolConfig)
+      ).wait(1);
 
-      if (!response) {
+      if (!addPoolResponse) {
         toast({
           position: "top-right",
           title: "Transaction Failed",

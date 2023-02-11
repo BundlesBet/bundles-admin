@@ -14,8 +14,9 @@ export const POOL_FETCH_MATCHES = "POOL_FETCH_MATCHES";
 export const POOL_CREATE_REPLICATE = "POOL_CREATE_REPLICATE";
 
 export const ADD_POOL_CONTRACT_CALL =
-  "addPoolData(string,uint256,uint256,uint256,uint256,string[],uint256)";
+  "addPoolData(string,uint256,uint256,uint256,uint256,string[],uint256,uint256)";
 export const ARCHIVE_POOL_CONTRACT_CALL = "archivePool(uint256)";
 export const UPDATE_POOL_CONTRACT_CALL =
   "updatePool(uint256,string,uint256,uint256)";
-export const ALL_MATCHES_CONTRACT_CALL = "allMatches(string)";
+export const BATCH_ADD_MATCHES_CONTRACT_CALL =
+  "batchAddMatches(string[],string[],string[],string[])";

@@ -21,7 +21,11 @@ import {
   POOL_FETCH_MATCHES,
   POOL_CREATE_REPLICATE,
 } from "utils/constants";
-import { capMaxBetEndTime, extractMatchIds } from "utils/helpers";
+import {
+  capMaxBetEndTime,
+  extractMatchIds,
+  formatContractData,
+} from "utils/helpers";
 
 const initialState = {
   fee: "",
@@ -53,7 +57,7 @@ const initialState = {
         },
       },
       espnMatchId: 401492629,
-      startTime: 1676135727000,
+      startTime: 1676208965000,
       name: "AFC  at NFC ",
     },
     {
@@ -76,7 +80,7 @@ const initialState = {
         },
       },
       espnMatchId: 401437932,
-      startTime: 1676139327000,
+      startTime: 1676295365000,
       name: "TEN at DAL",
     },
     {
@@ -99,7 +103,7 @@ const initialState = {
         },
       },
       espnMatchId: 401437938,
-      startTime: 1676132127000,
+      startTime: 1676381765000,
       name: "NE at MIA",
     },
   ],
@@ -111,6 +115,9 @@ const initialState = {
   rewardPercentage: "",
   isPoolEditing: false,
   contractMatchIds: [],
+  contractMatchNames: [],
+  contractTeamAs: [],
+  contractTeamBs: [],
   startTime: new Date(),
   poolToBeReplicated: {},
   poolToBeEdited: {},
@@ -306,10 +313,23 @@ const poolSlice = createSlice({
       const sortedMatches = capMaxBetEndTime(selectedMatches);
       state.betEndTime = sortedMatches[0].startTime;
     },
-    setContractMatchIds: (state, payload) => {
+    setContractMatchData: (state, payload) => {
       const { payload: selectedMatches } = payload;
-      const selectedMatchIds = extractMatchIds(selectedMatches);
-      const response = (state.contractMatchIds = selectedMatchIds);
+
+      const {
+        contractMatchIds,
+        contractMatchNames,
+        contractTeamAs,
+        contractTeamBs,
+      } = formatContractData(selectedMatches);
+      state.contractMatchIds = contractMatchIds;
+      state.contractMatchNames = contractMatchNames;
+      state.contractTeamAs = contractTeamAs;
+      state.contractTeamBs = contractTeamBs;
+    },
+    setContractMatches: (state, payload) => {
+      const { payload: matchesToBeAdded } = payload;
+      console.log(matchesToBeAdded);
     },
     setArchivePoolId: (state, payload) => {
       const { payload: poolId } = payload;
@@ -416,6 +436,10 @@ const poolSlice = createSlice({
         state.allPools = [...state.allPools, createdPool];
         state.isCreatePoolLoading = false;
         state.selectedMatches = [];
+        state.contractTeamAs = [];
+        state.contractTeamBs = [];
+        state.contractMatchIds = [];
+        state.contractMatchNames = [];
       })
       .addCase(createNewPool.rejected, (state, payload) => {
         state.allPools = state.allPools;
@@ -490,7 +514,7 @@ export const {
   handleChange,
   setBetEndTime,
   handleEditPool,
-  setContractMatchIds,
+  setContractMatchData,
   setArchivePoolId,
   setReplicatePoolId,
   handleSelectChange,
