@@ -8,9 +8,9 @@ import {
   Stack,
   Text,
 } from "@chakra-ui/react";
+import { useSelector } from "react-redux";
 
 import { ReplicatePoolForm } from "lib/components/samples/ReplicatePoolForm";
-import { useSelector } from "react-redux";
 
 interface ModalProps {
   isOpen: boolean;

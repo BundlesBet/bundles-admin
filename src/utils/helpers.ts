@@ -13,24 +13,24 @@ export const capMaxBetEndTime = (matches: any) => {
 };
 
 export const formatContractData = (matches: any) => {
-  const selectedMatchIds: string[] = [];
-  const selectedMatchNames: string[] = [];
-  const selectedTeamAs: string[] = [];
-  const selectedTeamBs: string[] = [];
+  const contractMatchIds: string[] = [];
+  const contractMatchNames: string[] = [];
+  const contractTeamAs: string[] = [];
+  const contractTeamBs: string[] = [];
 
   matches.forEach((match: any) => {
-    if (selectedMatchIds.includes(match.espnMatchId.toString())) return;
-    selectedMatchIds.push(match.espnMatchId);
-    selectedMatchNames.push(match.name);
-    selectedTeamAs.push(match.teams.a.abbreviation);
-    selectedTeamBs.push(match.teams.b.abbreviation);
+    if (contractMatchIds.includes(match.espnMatchId.toString())) return;
+    contractMatchIds.push(match.espnMatchId.toString());
+    contractMatchNames.push(match.name);
+    contractTeamAs.push(match.teams.a.abbreviation);
+    contractTeamBs.push(match.teams.b.abbreviation);
   });
 
   return {
-    selectedMatchIds,
-    selectedMatchNames,
-    selectedTeamAs,
-    selectedTeamBs,
+    contractMatchIds,
+    contractMatchNames,
+    contractTeamAs,
+    contractTeamBs,
   };
 };
 

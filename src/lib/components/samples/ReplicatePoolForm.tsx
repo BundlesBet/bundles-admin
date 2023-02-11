@@ -19,7 +19,7 @@ import {
   clearInputs,
   handleChange,
   replicatePool,
-  setContractMatchIds,
+  setContractMatchData,
   toggleReplicatePoolLoading,
 } from "redux/slices/poolSlice";
 import { ADD_POOL_CONTRACT_CALL } from "utils/constants";
@@ -45,7 +45,7 @@ export const ReplicatePoolForm = () => {
 
   useEffect(() => {
     if (!poolToBeReplicated.id) return;
-    dispatch(setContractMatchIds(poolToBeReplicated.matches));
+    dispatch(setContractMatchData(poolToBeReplicated.matches));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [poolToBeReplicated.id]);
 
@@ -97,6 +97,7 @@ export const ReplicatePoolForm = () => {
           new Date(poolToBeReplicated.betEndTime).getTime(),
           contractMatchIds,
           1000,
+          rewardPercentage,
         ],
       });
 
