@@ -101,6 +101,10 @@ export const CreatePoolForm = () => {
       }
 
       dispatch(toggleCreatePoolLoading());
+      console.log(contractMatchIds);
+      console.log(contractMatchNames);
+      console.log(contractTeamAs);
+      console.log(contractTeamBs);
 
       const batchAddMatchesConfig = await prepareWriteContract({
         address: contractDetails.adminContract.address,

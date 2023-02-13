@@ -1,6 +1,6 @@
 export const capMaxBetEndTime = (matches: any) => {
   const allMatches = [...matches];
-  if (allMatches.length > 1) {
+  if (allMatches.length > 0) {
     // eslint-disable-next-line sonarjs/prefer-immediate-return
     const sortedMatches = allMatches.sort((a: MatchData, b: MatchData) => {
       const aStartTime = new Date(a.startTime).getTime();
@@ -13,7 +13,7 @@ export const capMaxBetEndTime = (matches: any) => {
 };
 
 export const formatContractData = (matches: any) => {
-  if (matches.length > 1) {
+  if (matches.length > 0) {
     const contractMatchIds: string[] = [];
     const contractMatchNames: string[] = [];
     const contractTeamAs: string[] = [];
@@ -38,7 +38,7 @@ export const formatContractData = (matches: any) => {
 };
 
 export const extractMatchIds = (matches: any) => {
-  if (matches.length > 1) {
+  if (matches.length > 0) {
     const selectedMatchIds: string[] = [];
 
     matches.forEach((match: any) => {
