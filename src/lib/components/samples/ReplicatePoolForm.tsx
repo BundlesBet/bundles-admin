@@ -103,10 +103,12 @@ export const ReplicatePoolForm = () => {
 
       const response = await (await writeContract(config)).wait(1);
 
-      if (!response) {
+      const id = parseInt(response?.logs[0]?.topics[1]);
+
+      if (!id) {
         toast({
           position: "top-right",
-          title: "Transaction Failed",
+          title: "Pool Creation Failed",
           description: "Some error occured.",
           status: "error",
           duration: 4000,
@@ -114,14 +116,12 @@ export const ReplicatePoolForm = () => {
         });
         return;
       }
-
-      // (await writeAsync?.())?.wait(3).then((value) => {
-      // console.log(value);
       const payload = {
+        id,
         fee,
         poolName,
         protocolFee,
-        rewardPercentage,
+        rewardPercentage: parseInt(rewardPercentage),
         poolId: poolToBeReplicated.id,
       };
       dispatch(replicatePool(payload));

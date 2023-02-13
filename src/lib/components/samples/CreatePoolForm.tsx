@@ -8,6 +8,7 @@ import {
   useToast,
   useColorModeValue,
 } from "@chakra-ui/react";
+import BN from "bn.js";
 import { ethers } from "ethers";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -31,7 +32,7 @@ import {
   ADD_POOL_CONTRACT_CALL,
   BATCH_ADD_MATCHES_CONTRACT_CALL,
 } from "utils/constants";
-import BN from "bn.js";
+
 import CustomLoader from "./CustomLoader";
 
 export const CreatePoolForm = () => {
@@ -112,7 +113,6 @@ export const CreatePoolForm = () => {
           contractTeamAs,
           contractTeamBs,
         ],
-        // overrides: { gasLimit: new BN("100000000") as any },
       });
 
       const batchAddMatchesResponse = await (
@@ -152,10 +152,12 @@ export const CreatePoolForm = () => {
         await writeContract(addPoolConfig)
       ).wait(1);
 
-      if (!addPoolResponse) {
+      const poolId = parseInt(addPoolResponse?.logs[0]?.topics[1]);
+
+      if (!poolId) {
         toast({
           position: "top-right",
-          title: "Transaction Failed",
+          title: "Pool Creation Failed",
           description: "Some error occured.",
           status: "error",
           duration: 4000,
@@ -165,6 +167,7 @@ export const CreatePoolForm = () => {
       }
 
       const payload = {
+        id: poolId,
         sport,
         poolName,
         leagueName: league,

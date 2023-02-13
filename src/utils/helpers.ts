@@ -13,34 +13,39 @@ export const capMaxBetEndTime = (matches: any) => {
 };
 
 export const formatContractData = (matches: any) => {
-  const contractMatchIds: string[] = [];
-  const contractMatchNames: string[] = [];
-  const contractTeamAs: string[] = [];
-  const contractTeamBs: string[] = [];
+  if (matches.length > 1) {
+    const contractMatchIds: string[] = [];
+    const contractMatchNames: string[] = [];
+    const contractTeamAs: string[] = [];
+    const contractTeamBs: string[] = [];
 
-  matches.forEach((match: any) => {
-    if (contractMatchIds.includes(match.espnMatchId.toString())) return;
-    contractMatchIds.push(match.espnMatchId.toString());
-    contractMatchNames.push(match.name);
-    contractTeamAs.push(match.teams.a.abbreviation);
-    contractTeamBs.push(match.teams.b.abbreviation);
-  });
+    matches.forEach((match: any) => {
+      if (contractMatchIds.includes(match?.espnMatchId?.toString())) return;
+      contractMatchIds.push(match?.espnMatchId?.toString());
+      contractMatchNames.push(match?.name);
+      contractTeamAs.push(match?.teams?.a?.abbreviation);
+      contractTeamBs.push(match?.teams?.b?.abbreviation);
+    });
 
-  return {
-    contractMatchIds,
-    contractMatchNames,
-    contractTeamAs,
-    contractTeamBs,
-  };
+    return {
+      contractMatchIds,
+      contractMatchNames,
+      contractTeamAs,
+      contractTeamBs,
+    };
+  }
+  return matches;
 };
 
 export const extractMatchIds = (matches: any) => {
-  const selectedMatchIds: string[] = [];
+  if (matches.length > 1) {
+    const selectedMatchIds: string[] = [];
 
-  matches.forEach((match: any) => {
-    if (selectedMatchIds.includes(match.espnMatchId.toString())) return;
-    selectedMatchIds.push(match.espnMatchId.toString());
-  });
-
-  return selectedMatchIds;
+    matches.forEach((match: any) => {
+      if (selectedMatchIds.includes(match.espnMatchId.toString())) return;
+      selectedMatchIds.push(match.espnMatchId.toString());
+    });
+    return selectedMatchIds;
+  }
+  return matches;
 };

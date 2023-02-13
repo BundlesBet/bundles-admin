@@ -397,7 +397,7 @@ const PoolTable = () => {
                                   />
                                 </PopoverTrigger>
                                 {archivePoolId &&
-                                poolToBeArchived.participants.length ? (
+                                poolToBeArchived?.participants?.length ? (
                                   <Modal
                                     isOpen={isOpen}
                                     onClose={() => close()}
@@ -428,8 +428,8 @@ const PoolTable = () => {
                                           <Text fontSize="xl">
                                             {poolToBeArchived.poolName} has{" "}
                                             {
-                                              poolToBeArchived.participants
-                                                .length
+                                              poolToBeArchived?.participants
+                                                ?.length
                                             }
                                             bets placed on it and it cannot be
                                             archived

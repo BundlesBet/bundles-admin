@@ -185,7 +185,6 @@ export const createNewPool = createAsyncThunk(
   POOL_CREATE_POOL,
   async (poolDetails, thunkAPI) => {
     try {
-      console.log("running");
       const response = await createPool(poolDetails);
       // eslint-disable-next-line @typescript-eslint/no-use-before-define
       thunkAPI.dispatch(clearInputs());
@@ -315,7 +314,7 @@ const poolSlice = createSlice({
     },
     setContractMatchData: (state, payload) => {
       const { payload: selectedMatches } = payload;
-
+      if (!selectedMatches.length) return;
       const {
         contractMatchIds,
         contractMatchNames,
