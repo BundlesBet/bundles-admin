@@ -314,7 +314,6 @@ const poolSlice = createSlice({
     },
     setContractMatchData: (state, payload) => {
       const { payload: selectedMatches } = payload;
-      console.log(selectedMatches);
       if (!selectedMatches.length) return;
       const {
         contractMatchIds,
@@ -329,7 +328,6 @@ const poolSlice = createSlice({
     },
     setContractMatches: (state, payload) => {
       const { payload: matchesToBeAdded } = payload;
-      console.log(matchesToBeAdded);
     },
     setArchivePoolId: (state, payload) => {
       const { payload: poolId } = payload;

@@ -1,24 +1,9 @@
-import { Flex } from "@chakra-ui/react";
 import { NextSeo } from "next-seo";
-import { useRouter } from "next/router";
-import { useEffect } from "react";
-import { useAccount } from "wagmi";
-
+import { Flex } from "@chakra-ui/react";
 import CTASection from "lib/components/samples/CTASection";
 import SomeText from "lib/components/samples/SomeText";
 
 const Home = () => {
-  const { address, isConnected } = useAccount();
-  const router = useRouter();
-
-  useEffect(() => {
-    if (isConnected && address) {
-      router.push("/dashboard");
-    }
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isConnected, address]);
-
   return (
     <Flex
       direction="column"

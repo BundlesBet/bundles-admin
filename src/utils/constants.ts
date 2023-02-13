@@ -13,6 +13,7 @@ export const POOL_FETCH_LEAGUES = "POOL_FETCH_LEAGUES";
 export const POOL_FETCH_MATCHES = "POOL_FETCH_MATCHES";
 export const POOL_CREATE_REPLICATE = "POOL_CREATE_REPLICATE";
 
+export const IS_ADMIN_CONTRACT_CALL = "isAdmin(address)";
 export const ADD_POOL_CONTRACT_CALL =
   "addPoolData(string,uint256,uint256,uint256,uint256,string[],uint256,uint256)";
 export const ARCHIVE_POOL_CONTRACT_CALL = "archivePool(uint256)";
