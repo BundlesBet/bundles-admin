@@ -8,17 +8,13 @@ import {
   useToast,
   useColorModeValue,
 } from "@chakra-ui/react";
-import BN from "bn.js";
+import { unwrapResult } from "@reduxjs/toolkit";
 import { ethers } from "ethers";
 import moment from "moment";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useAccount } from "wagmi";
-import {
-  prepareWriteContract,
-  readContract,
-  writeContract,
-} from "wagmi/actions";
+import { prepareWriteContract, writeContract } from "wagmi/actions";
 
 import { contractDetails } from "config";
 import {
@@ -33,8 +29,6 @@ import {
   ADD_POOL_CONTRACT_CALL,
   BATCH_ADD_MATCHES_CONTRACT_CALL,
 } from "utils/constants";
-
-import CustomLoader from "./CustomLoader";
 
 export const CreatePoolForm = () => {
   const dispatch = useDispatch();
@@ -99,6 +93,18 @@ export const CreatePoolForm = () => {
   }, [startTime, betEndTime]);
 
   useEffect(() => {
+    if (isCreatePoolLoading) {
+      toast({
+        position: "top-right",
+        title: "Pool creation in-progress",
+        description: `${poolName} is being created`,
+        status: "info",
+        isClosable: true,
+      });
+    }
+  }, [isCreatePoolLoading]);
+
+  useEffect(() => {
     return () => dispatch(clearInputs());
   }, []);
 
@@ -139,7 +145,7 @@ export const CreatePoolForm = () => {
       if (!batchAddMatchesResponse) {
         toast({
           position: "top-right",
-          title: "Transaction Failed",
+          title: "Transaction failed",
           description: "Some error occured.",
           status: "error",
           duration: 4000,
@@ -174,7 +180,7 @@ export const CreatePoolForm = () => {
       if (!poolId) {
         toast({
           position: "top-right",
-          title: "Pool Creation Failed",
+          title: "Pool creation failed",
           description: "Some error occured.",
           status: "error",
           duration: 4000,
@@ -194,10 +200,30 @@ export const CreatePoolForm = () => {
         matches: selectedMatches,
         rewardPercentage,
       };
-      dispatch(createNewPool(payload));
+      dispatch(createNewPool(payload))
+        .then(unwrapResult)
+        .then((result) => {
+          if (!result.error) {
+            toast({
+              position: "top-right",
+              title: "Pool created successfully",
+              description: `${result.createdPool.poolName} has been created.`,
+              status: "success",
+              duration: 4000,
+              isClosable: false,
+            });
+          }
+        });
     } catch (err) {
+      toast({
+        position: "top-right",
+        title: "Pool creation failed",
+        description: `${poolName} cannot be created. Some error occured`,
+        status: "error",
+        duration: 4000,
+        isClosable: false,
+      });
       dispatch(toggleCreatePoolLoading());
-      console.log(err);
     }
   };
 

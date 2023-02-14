@@ -229,7 +229,8 @@ export const archivePool = createAsyncThunk(
   async (poolId, thunkAPI) => {
     if (!poolId) return;
     try {
-      return await poolArchive(poolId);
+      const response = await poolArchive(poolId);
+      return response;
     } catch (error) {
       return thunkAPI.rejectWithValue(error.message);
     }

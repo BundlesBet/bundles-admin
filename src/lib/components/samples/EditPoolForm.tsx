@@ -11,12 +11,8 @@ import { ethers } from "ethers";
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useAccount } from "wagmi";
-import {
-  readContract,
-  writeContract,
-  prepareWriteContract,
-} from "wagmi/actions";
-
+import { writeContract, prepareWriteContract } from "wagmi/actions";
+import { unwrapResult } from "@reduxjs/toolkit";
 import { contractDetails } from "config";
 import {
   clearInputs,
@@ -61,6 +57,18 @@ export const EditPoolForm = (props: PoolEditProps) => {
     }
     return () => {};
   }, [fee]);
+
+  useEffect(() => {
+    if (isEditPoolLoading) {
+      toast({
+        position: "top-right",
+        title: "Pool editing in-progress",
+        description: `${poolName} is being edited`,
+        status: "info",
+        isClosable: true,
+      });
+    }
+  }, [isEditPoolLoading]);
 
   const onEditPool = async (e: unknown) => {
     e.preventDefault();
@@ -111,10 +119,30 @@ export const EditPoolForm = (props: PoolEditProps) => {
         fee: parseInt(fee),
         protocolFee: parseFloat(protocolFee),
       };
-      dispatch(editPool({ poolId: poolToBeEdited.id, poolDetails: payload }));
+      dispatch(editPool({ poolId: poolToBeEdited.id, poolDetails: payload }))
+        .then(unwrapResult)
+        .then((result) => {
+          if (!result.error) {
+            toast({
+              position: "top-right",
+              title: "Pool edited successfully",
+              description: `${poolName} has been edited.`,
+              status: "success",
+              duration: 4000,
+              isClosable: false,
+            });
+          }
+        });
     } catch (error) {
+      toast({
+        position: "top-right",
+        title: "Pool edited failed",
+        description: `${poolName} cannot be edited. Some error occured`,
+        status: "error",
+        duration: 4000,
+        isClosable: false,
+      });
       dispatch(toggleEditPoolLoading());
-      console.log(error);
     }
   };
 

@@ -8,12 +8,12 @@ import {
   useColorModeValue,
   useToast,
 } from "@chakra-ui/react";
+import { unwrapResult } from "@reduxjs/toolkit";
 import { ethers } from "ethers";
 import { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useAccount } from "wagmi";
 import { writeContract, prepareWriteContract } from "wagmi/actions";
-
 import { contractDetails } from "config";
 import {
   clearInputs,
@@ -66,6 +66,18 @@ export const ReplicatePoolForm = () => {
     return () => {};
   }, [fee]);
 
+  useEffect(() => {
+    if (isReplicatePoolLoading) {
+      toast({
+        position: "top-right",
+        title: "Pool replication in-progress",
+        description: `${poolName} is being created`,
+        status: "info",
+        isClosable: true,
+      });
+    }
+  }, [isReplicatePoolLoading]);
+
   const onReplicatePool = async (e: unknown) => {
     e.preventDefault();
     try {
@@ -108,7 +120,7 @@ export const ReplicatePoolForm = () => {
       if (!id) {
         toast({
           position: "top-right",
-          title: "Pool Creation Failed",
+          title: "Pool creation failed",
           description: "Some error occured.",
           status: "error",
           duration: 4000,
@@ -124,12 +136,32 @@ export const ReplicatePoolForm = () => {
         rewardPercentage: parseInt(rewardPercentage),
         poolId: poolToBeReplicated.id,
       };
-      dispatch(replicatePool(payload));
+      dispatch(replicatePool(payload))
+        .then(unwrapResult)
+        .then((result) => {
+          if (!result.error) {
+            toast({
+              position: "top-right",
+              title: "Pool replicated successfully",
+              description: `${result.replicatedPool.poolName} has been created.`,
+              status: "success",
+              duration: 4000,
+              isClosable: false,
+            });
+          }
+        });
       // onReplicatePool(e);
       // });
     } catch (err) {
+      toast({
+        position: "top-right",
+        title: "Pool replication failed",
+        description: `${poolName} cannot be created. Some error occured`,
+        status: "error",
+        duration: 4000,
+        isClosable: false,
+      });
       dispatch(toggleReplicatePoolLoading());
-      console.log(err);
     }
   };
 

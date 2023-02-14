@@ -40,7 +40,8 @@ import {
 import Pagination from "@choc-ui/paginator";
 import moment from "moment";
 import type React from "react";
-import { useState, forwardRef } from "react";
+import { unwrapResult } from "@reduxjs/toolkit";
+import { useEffect, useState, forwardRef } from "react";
 import { BiCopy } from "react-icons/bi";
 import { BsFillTrashFill } from "react-icons/bs";
 import { FaEdit } from "react-icons/fa";
@@ -124,6 +125,18 @@ const PoolTable = () => {
     onClose: onReplicatePoolClose,
   } = useDisclosure();
 
+  useEffect(() => {
+    if (isArchivePoolLoading) {
+      toast({
+        position: "top-right",
+        title: "Pool archive in-progress",
+        description: `${poolToBeArchived.poolName} is being archived`,
+        status: "info",
+        isClosable: true,
+      });
+    }
+  }, [isArchivePoolLoading]);
+
   const onPoolArchive = async () => {
     try {
       if (!address && !isConnected) {
@@ -159,8 +172,29 @@ const PoolTable = () => {
         });
         return;
       }
-      dispatch(archivePool(archivePoolId));
+      dispatch(archivePool(archivePoolId))
+        .then(unwrapResult)
+        .then((result) => {
+          if (!result.error && result.archived) {
+            toast({
+              position: "top-right",
+              title: "Pool archived successfully",
+              description: `${poolToBeArchived.poolName} has been archived.`,
+              status: "success",
+              duration: 4000,
+              isClosable: false,
+            });
+          }
+        });
     } catch (err) {
+      toast({
+        position: "top-right",
+        title: "Pool archive failed",
+        description: `${poolToBeArchived.poolName} cannot be archived. Some error occured`,
+        status: "error",
+        duration: 4000,
+        isClosable: false,
+      });
       dispatch(toggleArchivePoolLoading());
       console.log(err);
     }
