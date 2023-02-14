@@ -10,6 +10,7 @@ import {
 } from "@chakra-ui/react";
 import BN from "bn.js";
 import { ethers } from "ethers";
+import moment from "moment";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useAccount } from "wagmi";
@@ -34,7 +35,6 @@ import {
 } from "utils/constants";
 
 import CustomLoader from "./CustomLoader";
-import moment from "moment";
 
 export const CreatePoolForm = () => {
   const dispatch = useDispatch();
@@ -235,6 +235,7 @@ export const CreatePoolForm = () => {
           placeholder="Select Date"
           disabled={isCreatePoolLoading}
           min={new Date().toISOString().slice(0, -8)}
+          max={new Date(betEndTime).toISOString().slice(0, -8)}
         />
       </FormControl>
 
