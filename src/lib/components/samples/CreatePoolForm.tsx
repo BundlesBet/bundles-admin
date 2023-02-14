@@ -34,6 +34,7 @@ import {
 } from "utils/constants";
 
 import CustomLoader from "./CustomLoader";
+import moment from "moment";
 
 export const CreatePoolForm = () => {
   const dispatch = useDispatch();
@@ -80,6 +81,22 @@ export const CreatePoolForm = () => {
     }
     return () => {};
   }, [fee]);
+
+  useEffect(() => {
+    if (!startTime || !betEndTime) return;
+    if (startTime.getTime() > betEndTime) {
+      toast({
+        position: "top-right",
+        title: "Invalid Start Time",
+        description: `Pool Start Time cannot be beyond ${moment(
+          betEndTime
+        ).format("MM-DD-YYYY hh:mm A")}`,
+        status: "error",
+        isClosable: true,
+      });
+    }
+    return () => {};
+  }, [startTime, betEndTime]);
 
   useEffect(() => {
     return () => dispatch(clearInputs());
@@ -287,7 +304,8 @@ export const CreatePoolForm = () => {
           !protocolFee ||
           !isConnected ||
           !rewardPercentage ||
-          isCreatePoolLoading
+          isCreatePoolLoading ||
+          startTime.getTime() > betEndTime
         }
       >
         {isCreatePoolLoading ? "Loading" : "Create Pool"}

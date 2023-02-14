@@ -1,5 +1,6 @@
-import { NextSeo } from "next-seo";
 import { Flex } from "@chakra-ui/react";
+import { NextSeo } from "next-seo";
+
 import CTASection from "lib/components/samples/CTASection";
 import SomeText from "lib/components/samples/SomeText";
 

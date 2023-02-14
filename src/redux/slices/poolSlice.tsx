@@ -57,7 +57,7 @@ const initialState = {
         },
       },
       espnMatchId: 401492629,
-      startTime: 1676208965000,
+      startTime: 1676450368000,
       name: "AFC  at NFC ",
     },
     {
@@ -80,7 +80,7 @@ const initialState = {
         },
       },
       espnMatchId: 401437932,
-      startTime: 1676295365000,
+      startTime: 1676536768000,
       name: "TEN at DAL",
     },
     {
@@ -103,7 +103,7 @@ const initialState = {
         },
       },
       espnMatchId: 401437938,
-      startTime: 1676381765000,
+      startTime: 1676623168000,
       name: "NE at MIA",
     },
   ],
@@ -118,7 +118,7 @@ const initialState = {
   contractMatchNames: [],
   contractTeamAs: [],
   contractTeamBs: [],
-  startTime: new Date(),
+  startTime: null,
   poolToBeReplicated: {},
   poolToBeEdited: {},
   poolToBeArchived: {},
@@ -282,7 +282,11 @@ const poolSlice = createSlice({
         poolName: "",
         protocolFee: "",
         rewardPercentage: "",
-        startTime: new Date(),
+        startTime: null,
+        contractMatchIds: [],
+        contractMatchNames: [],
+        contractTeamAs: [],
+        contractTeamBs: [],
       };
     },
     handleEditPool: (state, payload) => {

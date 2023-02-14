@@ -109,7 +109,7 @@ export const EditPoolForm = (props: PoolEditProps) => {
       const payload = {
         poolName,
         fee: parseInt(fee),
-        protocolFee: parseInt(protocolFee),
+        protocolFee: parseFloat(protocolFee),
       };
       dispatch(editPool({ poolId: poolToBeEdited.id, poolDetails: payload }));
     } catch (error) {
