@@ -107,14 +107,13 @@ const MyApp = ({ Component, pageProps }: AppProps) => {
         duration: 4000,
         isClosable: false,
       });
+      router.push("/");
     }
   };
 
   useEffect(() => {
     if (isConnected && address) {
       checkIsAdmin();
-    } else {
-      router.push("/");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isConnected, address]);
