@@ -53,9 +53,6 @@ export const CreatePoolForm = () => {
 
   const onInputChange = (e: unknown) => {
     const { name, value } = e.target;
-    console.log(name)
-    console.log(value)
-    console.log("running")
     dispatch(handleChange({ name, value }));
   };
 
