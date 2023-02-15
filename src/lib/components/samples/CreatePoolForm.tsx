@@ -53,6 +53,9 @@ export const CreatePoolForm = () => {
 
   const onInputChange = (e: unknown) => {
     const { name, value } = e.target;
+    console.log(name)
+    console.log(value)
+    console.log("running")
     dispatch(handleChange({ name, value }));
   };
 
@@ -261,7 +264,7 @@ export const CreatePoolForm = () => {
           placeholder="Select Date"
           disabled={isCreatePoolLoading}
           min={new Date().toISOString().slice(0, -8)}
-          max={new Date(betEndTime).toISOString().slice(0, -8)}
+          // max={new Date(betEndTime).toISOString().slice(0, -8)}
         />
       </FormControl>
 

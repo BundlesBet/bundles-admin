@@ -272,6 +272,7 @@ const poolSlice = createSlice({
       if ((name === "fee" || name === "protocolFee") && value < 0) {
         value = 0;
       }
+      console.log(value)
       state[name] = value;
     },
     handleSelectChange: (state, payload) => {
