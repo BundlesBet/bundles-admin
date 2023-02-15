@@ -40,7 +40,7 @@ const initialState = {
     {
       teams: {
         a: {
-          value: 1,
+          value: 0,
           abbreviation: "NFC",
           name: "NFC",
           link: "sportscenter://x-callback-url/showClubhouse?uid=s:20~l:28~t:32&section=scores",
@@ -57,13 +57,13 @@ const initialState = {
         },
       },
       espnMatchId: 401492629,
-      startTime: 1676455940000,
+      startTime: 1676559300000,
       name: "AFC  at NFC ",
     },
     {
       teams: {
         a: {
-          value: 1,
+          value: 0,
           abbreviation: "TEN",
           name: "Tennessee Titans",
           link: "https://www.espn.com/nfl/team/_/name/ten/tennessee-titans",
@@ -71,7 +71,7 @@ const initialState = {
           teamId: "10",
         },
         b: {
-          value: 2,
+          value: 1,
           abbreviation: "DAL",
           name: "Dallas Cowboys",
           link: "https://www.espn.com/nfl/team/_/name/dal/dallas-cowboys",
@@ -80,13 +80,13 @@ const initialState = {
         },
       },
       espnMatchId: 401437932,
-      startTime: 1676457020000,
+      startTime: 1676559000000,
       name: "TEN at DAL",
     },
     {
       teams: {
         a: {
-          value: 1,
+          value: 0,
           abbreviation: "NE",
           name: "New England Patriots",
           link: "https://www.espn.com/nfl/team/_/name/ne/new-england-patriots",
@@ -94,7 +94,7 @@ const initialState = {
           teamId: "17",
         },
         b: {
-          value: 2,
+          value: 1,
           abbreviation: "MIA",
           name: "Miami Dolphins",
           link: "https://www.espn.com/nfl/team/_/name/mia/miami-dolphins",
@@ -103,13 +103,13 @@ const initialState = {
         },
       },
       espnMatchId: 401437938,
-      startTime: 1676457920000,
+      startTime: 1676558700000,
       name: "NE at MIA",
     },
     {
       teams: {
         a: {
-          value: 1,
+          value: 0,
           abbreviation: "TH",
           name: "Tottenham Hotspur",
           link: "https://www.espn.com/nfl/team/_/name/ne/new-england-patriots",
@@ -117,7 +117,7 @@ const initialState = {
           teamId: "17",
         },
         b: {
-          value: 2,
+          value: 1,
           abbreviation: "AM",
           name: "AC Milan",
           link: "https://www.espn.com/nfl/team/_/name/mia/miami-dolphins",
@@ -126,8 +126,27 @@ const initialState = {
         },
       },
       espnMatchId: 656857,
-      startTime: 1676458820000,
+      startTime: 1676558100000,
       name: "Tottenham Hotspur at AC Milan",
+    },
+    {
+      teams: {
+        a: {
+          value: 0,
+          abbreviation: "PHI",
+          name: "Philadelphia Eagles",
+          teamId: "21",
+        },
+        b: {
+          value: 1,
+          abbreviation: "KC",
+          name: "Kansas City Chiefs",
+          teamId: "12",
+        },
+      },
+      espnMatchId: 401438030,
+      startTime: 1676558400000,
+      name: "Kansas City Chiefs at Philadelphia Eagles",
     },
   ],
   protocolFee: "",
