@@ -106,6 +106,29 @@ const initialState = {
       startTime: 1676623168000,
       name: "NE at MIA",
     },
+    {
+      teams: {
+        a: {
+          value: 1,
+          abbreviation: "TH",
+          name: "Tottenham Hotspur",
+          link: "https://www.espn.com/nfl/team/_/name/ne/new-england-patriots",
+          logo: "https://a.espncdn.com/i/teamlogos/nfl/500/ne.png",
+          teamId: "17",
+        },
+        b: {
+          value: 2,
+          abbreviation: "AM",
+          name: "AC Milan",
+          link: "https://www.espn.com/nfl/team/_/name/mia/miami-dolphins",
+          logo: "https://a.espncdn.com/i/teamlogos/nfl/500/mia.png",
+          teamId: "15",
+        },
+      },
+      espnMatchId: 656857,
+      startTime: 1676446511000,
+      name: "Tottenham Hotspur at AC Milan",
+    },
   ],
   protocolFee: "",
   betEndTime: null,
@@ -229,8 +252,7 @@ export const archivePool = createAsyncThunk(
   async (poolId, thunkAPI) => {
     if (!poolId) return;
     try {
-      const response = await poolArchive(poolId);
-      return response;
+      return await poolArchive(poolId);
     } catch (error) {
       return thunkAPI.rejectWithValue(error.message);
     }

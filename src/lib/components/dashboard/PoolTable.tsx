@@ -38,9 +38,9 @@ import {
   Text,
 } from "@chakra-ui/react";
 import Pagination from "@choc-ui/paginator";
+import { unwrapResult } from "@reduxjs/toolkit";
 import moment from "moment";
 import type React from "react";
-import { unwrapResult } from "@reduxjs/toolkit";
 import { useEffect, useState, forwardRef } from "react";
 import { BiCopy } from "react-icons/bi";
 import { BsFillTrashFill } from "react-icons/bs";

@@ -7,12 +7,13 @@ import {
   useColorModeValue,
   useToast,
 } from "@chakra-ui/react";
+import { unwrapResult } from "@reduxjs/toolkit";
 import { ethers } from "ethers";
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useAccount } from "wagmi";
 import { writeContract, prepareWriteContract } from "wagmi/actions";
-import { unwrapResult } from "@reduxjs/toolkit";
+
 import { contractDetails } from "config";
 import {
   clearInputs,

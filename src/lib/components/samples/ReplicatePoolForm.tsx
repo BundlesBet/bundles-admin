@@ -14,6 +14,7 @@ import { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useAccount } from "wagmi";
 import { writeContract, prepareWriteContract } from "wagmi/actions";
+
 import { contractDetails } from "config";
 import {
   clearInputs,

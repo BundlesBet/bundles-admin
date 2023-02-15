@@ -319,6 +319,7 @@ export const CreatePoolForm = () => {
           color: "#111",
           bg: "#00ffc2",
         }}
+        isLoading={isCreatePoolLoading}
         size="lg"
         onClick={(e) => onCreatePool(e)}
         disabled={
